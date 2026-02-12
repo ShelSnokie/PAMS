@@ -1,0 +1,66 @@
+// User Roles and Dashboard Mappings
+
+export const USER_ROLES = {
+  PUBLIC: 'PUBLIC',
+  REGISTERED_RESEARCHER: 'REGISTERED_RESEARCHER',
+  DIGITIZATION_TECH: 'DIGITIZATION_TECH',
+  CONSERVATION_ASSISTANT: 'CONSERVATION_ASSISTANT',
+  METADATA_SPECIALIST: 'METADATA_SPECIALIST',
+  REFERENCE_ARCHIVIST: 'REFERENCE_ARCHIVIST',
+  OUTREACH_COORDINATOR: 'OUTREACH_COORDINATOR',
+  PROCESSING_ARCHIVIST: 'PROCESSING_ARCHIVIST',
+  SUBJECT_SPECIALIST: 'SUBJECT_SPECIALIST',
+  DEPARTMENT_HEAD: 'DEPARTMENT_HEAD',
+  PRESERVATION_MANAGER: 'PRESERVATION_MANAGER',
+  NATIONAL_ARCHIVIST: 'NATIONAL_ARCHIVIST',
+  SECURITY_OFFICER: 'SECURITY_OFFICER',
+  SYSTEM_ADMIN: 'SYSTEM_ADMIN',
+} as const
+
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES]
+
+// Role to Dashboard Mapping
+export const ROLE_DASHBOARD_MAP: Record<UserRole, string> = {
+  [USER_ROLES.PUBLIC]: '/',
+  [USER_ROLES.REGISTERED_RESEARCHER]: '/dashboard/reference',
+  [USER_ROLES.DIGITIZATION_TECH]: '/dashboard/tech',
+  [USER_ROLES.CONSERVATION_ASSISTANT]: '/dashboard/conservation',
+  [USER_ROLES.METADATA_SPECIALIST]: '/dashboard/metadata',
+  [USER_ROLES.REFERENCE_ARCHIVIST]: '/dashboard/reference',
+  [USER_ROLES.OUTREACH_COORDINATOR]: '/dashboard/outreach',
+  [USER_ROLES.PROCESSING_ARCHIVIST]: '/dashboard/processing',
+  [USER_ROLES.SUBJECT_SPECIALIST]: '/dashboard/specialist',
+  [USER_ROLES.DEPARTMENT_HEAD]: '/dashboard/management',
+  [USER_ROLES.PRESERVATION_MANAGER]: '/dashboard/preservation',
+  [USER_ROLES.NATIONAL_ARCHIVIST]: '/dashboard/executive',
+  [USER_ROLES.SECURITY_OFFICER]: '/dashboard/security',
+  [USER_ROLES.SYSTEM_ADMIN]: '/dashboard/admin',
+}
+
+// Role Display Names
+export const ROLE_DISPLAY_NAMES: Record<UserRole, string> = {
+  [USER_ROLES.PUBLIC]: 'Public User',
+  [USER_ROLES.REGISTERED_RESEARCHER]: 'Registered Researcher',
+  [USER_ROLES.DIGITIZATION_TECH]: 'Digitization Technician',
+  [USER_ROLES.CONSERVATION_ASSISTANT]: 'Conservation Assistant',
+  [USER_ROLES.METADATA_SPECIALIST]: 'Metadata Specialist',
+  [USER_ROLES.REFERENCE_ARCHIVIST]: 'Reference Archivist',
+  [USER_ROLES.OUTREACH_COORDINATOR]: 'Outreach Coordinator',
+  [USER_ROLES.PROCESSING_ARCHIVIST]: 'Processing Archivist',
+  [USER_ROLES.SUBJECT_SPECIALIST]: 'Subject Specialist',
+  [USER_ROLES.DEPARTMENT_HEAD]: 'Department Head',
+  [USER_ROLES.PRESERVATION_MANAGER]: 'Preservation Manager',
+  [USER_ROLES.NATIONAL_ARCHIVIST]: 'National Archivist',
+  [USER_ROLES.SECURITY_OFFICER]: 'Security Officer',
+  [USER_ROLES.SYSTEM_ADMIN]: 'System Administrator',
+}
+
+// Clearance Levels
+export const CLEARANCE_LEVELS = {
+  RESTRICTED: 'RESTRICTED',
+  CONFIDENTIAL: 'CONFIDENTIAL',
+  SECRET: 'SECRET',
+  TOP_SECRET: 'TOP_SECRET',
+} as const
+
+export type ClearanceLevel = (typeof CLEARANCE_LEVELS)[keyof typeof CLEARANCE_LEVELS]
