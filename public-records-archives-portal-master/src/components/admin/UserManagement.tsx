@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Users, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Users,
+  Plus,
+  Edit,
+  Trash2,
   Search,
   CheckCircle,
   XCircle,
@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DEPARTMENTS } from '@/lib/constants/departments'
 import { USER_ROLES, ROLE_DISPLAY_NAMES } from '@/lib/constants/roles'
@@ -81,11 +81,11 @@ export default function UserManagement() {
 
   // Filter users
   const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+    const matchesSearch =
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.fullName && user.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
-    
+
     const matchesDepartment = selectedDepartment === 'all' || user.department === selectedDepartment
     const matchesRole = selectedRole === 'all' || user.role === selectedRole
 
@@ -154,10 +154,148 @@ export default function UserManagement() {
             {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''} found
           </p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
+        <Sheet open={showAddModal} onOpenChange={setShowAddModal}>
+          <SheetTrigger asChild>
+            <Button size="icon" className="rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-all">
+              <Plus className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="overflow-y-auto sm:max-w-xl">
+            <SheetHeader className="mb-6">
+              <SheetTitle>Add New User</SheetTitle>
+              <SheetDescription>
+                Create a new user account. They will receive their login credentials via email.
+              </SheetDescription>
+            </SheetHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username *</Label>
+                    <Input
+                      id="username"
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      required
+                      placeholder="johndoe"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="employeeId">Employee ID</Label>
+                    <Input
+                      id="employeeId"
+                      value={formData.employeeId}
+                      onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
+                      placeholder="EMP-001"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    placeholder="john@example.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    placeholder="John Doe"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Role *</Label>
+                    <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })} required>
+                      <SelectTrigger id="role">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(USER_ROLES).map(([key, value]) => (
+                          <SelectItem key={key} value={value}>{ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="department">Department</Label>
+                    <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
+                      <SelectTrigger id="department">
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(DEPARTMENTS).filter(d => d !== 'ALL').map((dept) => (
+                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="clearanceLevel">Clearance Level</Label>
+                  <Select
+                    value={formData.clearanceLevel}
+                    onValueChange={(value) => setFormData({ ...formData, clearanceLevel: value })}
+                  >
+                    <SelectTrigger id="clearanceLevel">
+                      <SelectValue placeholder="Select clearance" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RESTRICTED">Restricted</SelectItem>
+                      <SelectItem value="CONFIDENTIAL">Confidential</SelectItem>
+                      <SelectItem value="SECRET">Secret</SelectItem>
+                      <SelectItem value="TOP_SECRET">Top Secret</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create User
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Filters */}
@@ -217,10 +355,13 @@ export default function UserManagement() {
               : 'Get started by adding your first user'}
           </p>
           {!searchQuery && selectedDepartment === 'all' && selectedRole === 'all' && (
-            <Button onClick={() => setShowAddModal(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add First User
-            </Button>
+            <div className="flex justify-center">
+              {/* Fallback button if list empty too */}
+              <Button onClick={() => setShowAddModal(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add First User
+              </Button>
+            </div>
           )}
         </Card>
       ) : (
@@ -270,135 +411,6 @@ export default function UserManagement() {
           </div>
         </div>
       )}
-
-      {/* Add User Modal */}
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>
-              Create a new user account. They will receive their login credentials via email.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="username">Username *</Label>
-                <Input
-                  id="username"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  required
-                  placeholder="johndoe"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
-                  placeholder="••••••••"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="John Doe"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="employeeId">Employee ID</Label>
-                <Input
-                  id="employeeId"
-                  value={formData.employeeId}
-                  onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                  placeholder="EMP-001"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Role *</Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })} required>
-                  <SelectTrigger id="role">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(USER_ROLES).map(([key, value]) => (
-                      <SelectItem key={key} value={value}>{ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="department">Department</Label>
-                <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-                  <SelectTrigger id="department">
-                    <SelectValue placeholder="Select department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(DEPARTMENTS).filter(d => d !== 'ALL').map((dept) => (
-                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clearanceLevel">Clearance Level</Label>
-                <Select 
-                  value={formData.clearanceLevel} 
-                  onValueChange={(value) => setFormData({ ...formData, clearanceLevel: value })}
-                >
-                  <SelectTrigger id="clearanceLevel">
-                    <SelectValue placeholder="Select clearance" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="RESTRICTED">Restricted</SelectItem>
-                    <SelectItem value="CONFIDENTIAL">Confidential</SelectItem>
-                    <SelectItem value="SECRET">Secret</SelectItem>
-                    <SelectItem value="TOP_SECRET">Top Secret</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create User
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

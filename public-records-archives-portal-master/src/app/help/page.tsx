@@ -26,6 +26,16 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
 import Link from 'next/link'
 
 const helpCategories = [
@@ -149,12 +159,7 @@ const quickGuides = [
 
 export default function HelpCenterPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-
-  const toggleFaq = (id: number) => {
-    setExpandedFaq(expandedFaq === id ? null : id)
-  }
 
   const filteredFaqs = faqs.filter(faq => {
     const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -313,196 +318,207 @@ export default function HelpCenterPage() {
                   </Button>
                 </Card>
               ) : (
-                <div className="space-y-3 max-w-3xl w-full">
+              ): (
+                  <div className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl w-full">
                   {filteredFaqs.map((faq, index) => {
                     const category = helpCategories.find(c => c.id === faq.category)
-                    return (
-                      <motion.div
-                        key={faq.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                      >
-                        <Card className="overflow-hidden border shadow-sm">
-                          <button
-                            className="w-full text-left p-4 hover:bg-muted/50 transition-colors"
-                            onClick={() => toggleFaq(faq.id)}
-                          >
-                            <div className="flex items-center justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  {category && (
-                                    <Badge variant="outline" className="text-[10px] h-4 py-0">
-                                      {category.title}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <h3 className="font-semibold text-sm leading-tight">{faq.question}</h3>
-                              </div>
-                              {expandedFaq === faq.id ? (
-                                <ChevronUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              )}
-                            </div>
-                            {expandedFaq === faq.id && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-3 pt-3 border-t"
-                              >
-                                <p className="text-xs text-muted-foreground leading-relaxed">
-                                  {faq.answer}
-                                </p>
-                              </motion.div>
-                            )}
-                          </button>
-                        </Card>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-              )}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Quick Guides */}
-        <section className="py-12">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-3xl font-bold mb-8 text-center">Quick Guides</h2>
-              <div className="grid gap-6 md:grid-cols-3">
-                {quickGuides.map((guide, index) => (
-                  <motion.div
-                    key={guide.title}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    <Card className="h-full">
-                      <CardHeader className="text-center flex flex-col items-center">
-                        <div className="h-16 w-16 flex items-center justify-center mb-4">
-                          <guide.icon className="h-10 w-10 text-primary" />
+              return (
+              <motion.div
+                key={faq.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <Drawer>
+                  <DrawerTrigger asChild>
+                    <button
+                      className="w-full text-left p-6 bg-background rounded-xl border-2 hover:border-primary/50 hover:bg-muted/30 transition-all shadow-sm group h-full flex flex-col gap-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        {category && (
+                          <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                            {category.title}
+                          </Badge>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-sm leading-tight group-hover:text-primary transition-colors">
+                        {faq.question}
+                      </h3>
+                      <div className="mt-auto flex items-center text-[10px] text-muted-foreground font-medium group-hover:text-primary transition-colors">
+                        View Answer <ExternalLink className="ml-1 h-3 w-3" />
+                      </div>
+                    </button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <div className="mx-auto w-full max-w-2xl px-4">
+                      <DrawerHeader className="text-left md:text-left">
+                        <div className="flex items-center gap-2 mb-2">
+                          {category && (
+                            <Badge variant="outline" className="text-[10px]">
+                              {category.title}
+                            </Badge>
+                          )}
                         </div>
-                        <CardTitle className="text-xl">{guide.title}</CardTitle>
-                        <CardDescription>{guide.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <ol className="space-y-2">
-                          {guide.steps.map((step, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm">
-                              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center mt-0.5">
-                                {i + 1}
-                              </span>
-                              <span className="text-muted-foreground">{step}</span>
-                            </li>
-                          ))}
-                        </ol>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
+                        <DrawerTitle className="text-2xl font-bold">{faq.question}</DrawerTitle>
+                      </DrawerHeader>
+                      <div className="p-6 pt-0">
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
+                      <DrawerFooter className="pt-2 border-t mt-4 flex flex-row gap-3 justify-end items-center">
+                        <DrawerClose asChild>
+                          <Button variant="outline" size="sm">Close Window</Button>
+                        </DrawerClose>
+                      </DrawerFooter>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
+              </motion.div>
+              )
+                  })}
           </div>
-        </section>
-
-        {/* Contact Section */}
-        <section className="py-12 bg-muted/50">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-3xl font-bold mb-8 text-center">Need More Help?</h2>
-              <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-                <Card>
-                  <CardHeader className="text-center flex flex-col items-center">
-                    <div className="h-12 w-12 flex items-center justify-center mb-3">
-                      <Phone className="h-10 w-10 text-primary" />
-                    </div>
-                    <CardTitle>Phone Support</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-center flex flex-col items-center">
-                    <p className="text-xl font-bold">1-800-555-0123</p>
-                    <p className="text-xs text-muted-foreground">
-                      Mon-Fri: 8:00 AM - 5:00 PM
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Weekends: 9:00 AM - 1:00 PM
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="text-center flex flex-col items-center">
-                    <div className="h-12 w-12 flex items-center justify-center mb-3">
-                      <Mail className="h-10 w-10 text-primary" />
-                    </div>
-                    <CardTitle>Email Support</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-center flex flex-col items-center">
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold">General Inquiries:</p>
-                      <p className="text-xs text-muted-foreground">help@archives.gov.zw</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold">Technical Support:</p>
-                      <p className="text-xs text-muted-foreground">tech@archives.gov.zw</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="text-center flex flex-col items-center">
-                    <div className="h-12 w-12 flex items-center justify-center mb-3">
-                      <MapPin className="h-10 w-10 text-primary" />
-                    </div>
-                    <CardTitle>Visit Us</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3 text-center flex flex-col items-center">
-                    <p className="text-xs font-semibold">Public Records Office</p>
-                    <p className="text-xs text-muted-foreground">
-                      123 Archive Street<br />
-                      Harare, Zimbabwe
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>8:00 AM - 4:30 PM</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-      </main>
-
-      <footer className="mt-auto border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-            <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span>Archivum Lumen</span>
-          </Link>
-          <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-          <p className="mt-2 text-xs">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            {' • '}
-            <Link href="/accessibility" className="hover:text-primary transition-colors">Accessibility</Link>
-            {' • '}
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-          </p>
-        </div>
-      </footer>
+              )}
+        </motion.div>
     </div>
+        </section >
+
+    {/* Quick Guides */ }
+    < section className = "py-12" >
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-8 text-center">Quick Guides</h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {quickGuides.map((guide, index) => (
+              <motion.div
+                key={guide.title}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <Card className="h-full">
+                  <CardHeader className="text-center flex flex-col items-center">
+                    <div className="h-16 w-16 flex items-center justify-center mb-4">
+                      <guide.icon className="h-10 w-10 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl">{guide.title}</CardTitle>
+                    <CardDescription>{guide.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ol className="space-y-2">
+                      {guide.steps.map((step, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center mt-0.5">
+                            {i + 1}
+                          </span>
+                          <span className="text-muted-foreground">{step}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+        </section >
+
+    {/* Contact Section */ }
+    < section className = "py-12 bg-muted/50" >
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-8 text-center">Need More Help?</h2>
+          <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
+            <Card>
+              <CardHeader className="text-center flex flex-col items-center">
+                <div className="h-12 w-12 flex items-center justify-center mb-3">
+                  <Phone className="h-10 w-10 text-primary" />
+                </div>
+                <CardTitle>Phone Support</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-center flex flex-col items-center">
+                <p className="text-xl font-bold">1-800-555-0123</p>
+                <p className="text-xs text-muted-foreground">
+                  Mon-Fri: 8:00 AM - 5:00 PM
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Weekends: 9:00 AM - 1:00 PM
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="text-center flex flex-col items-center">
+                <div className="h-12 w-12 flex items-center justify-center mb-3">
+                  <Mail className="h-10 w-10 text-primary" />
+                </div>
+                <CardTitle>Email Support</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-center flex flex-col items-center">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold">General Inquiries:</p>
+                  <p className="text-xs text-muted-foreground">help@archives.gov.zw</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold">Technical Support:</p>
+                  <p className="text-xs text-muted-foreground">tech@archives.gov.zw</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="text-center flex flex-col items-center">
+                <div className="h-12 w-12 flex items-center justify-center mb-3">
+                  <MapPin className="h-10 w-10 text-primary" />
+                </div>
+                <CardTitle>Visit Us</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-center flex flex-col items-center">
+                <p className="text-xs font-semibold">Public Records Office</p>
+                <p className="text-xs text-muted-foreground">
+                  123 Archive Street<br />
+                  Harare, Zimbabwe
+                </p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  <span>8:00 AM - 4:30 PM</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
+      </div>
+        </section >
+
+      </main >
+
+    <footer className="mt-auto border-t py-8">
+      <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+        <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
+          <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
+          <span>Archivum Lumen</span>
+        </Link>
+        <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
+        <p className="mt-2 text-xs">
+          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+          {' • '}
+          <Link href="/accessibility" className="hover:text-primary transition-colors">Accessibility</Link>
+          {' • '}
+          <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+        </p>
+      </div>
+    </footer>
+    </div >
   )
 }

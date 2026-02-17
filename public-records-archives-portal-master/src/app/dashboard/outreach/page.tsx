@@ -23,7 +23,8 @@ import {
   Video,
   MapPin,
   ExternalLink,
-  FileCheck
+  FileCheck,
+  Search
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'

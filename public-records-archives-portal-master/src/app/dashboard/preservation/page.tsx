@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Calendar,
   Database,
+  BarChart3,
   TrendingUp,
   Clock,
   MoreHorizontal,
@@ -24,7 +25,9 @@ import {
   HardDrive,
   Zap,
   FileCheck,
-  User
+  User,
+  Filter,
+  Plus
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -517,77 +520,76 @@ export default function PreservationManagerDashboard() {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </TabsContent>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="environment">
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Thermometer className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Environmental Monitoring</h3>
-              <p className="text-muted-foreground mb-4">
-                Monitor temperature, humidity, and light exposure across storage units
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline">View All Units</Button>
-                <Button>View Alerts</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="environment">
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Thermometer className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Environmental Monitoring</h3>
+                <p className="text-muted-foreground mb-4">
+                  Monitor temperature, humidity, and light exposure across storage units
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button variant="outline">View All Units</Button>
+                  <Button>View Alerts</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="storage">
-          <Card>
-            <CardContent className="p-12 text-center">
-              <HardDrive className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Storage Management</h3>
-              <p className="text-muted-foreground mb-4">
-                Manage storage capacity, backups, and retention policies
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline">View Capacity</Button>
-                <Button>View Backups</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="storage">
+            <Card>
+              <CardContent className="p-12 text-center">
+                <HardDrive className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Storage Management</h3>
+                <p className="text-muted-foreground mb-4">
+                  Manage storage capacity, backups, and retention policies
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button variant="outline">View Capacity</Button>
+                  <Button>View Backups</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="digital">
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Database className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Digital Preservation</h3>
-              <p className="text-muted-foreground mb-4">
-                Track format obsolescence, migration schedules, and fixity checks
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline">View Formats</Button>
-                <Button>Check Fixity</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </main>
+          <TabsContent value="digital">
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Database className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Digital Preservation</h3>
+                <p className="text-muted-foreground mb-4">
+                  Track format obsolescence, migration schedules, and fixity checks
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button variant="outline">View Formats</Button>
+                  <Button>Check Fixity</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
 
-      {/* Footer */ }
-  <footer className="mt-auto border-t py-8">
-    <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-      <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-        <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-        <span>Archivum Lumen</span>
-      </Link>
-      <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-      <p className="mt-2 text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">
-        Preservation Lab Console | Digital Preservation Environment
-      </p>
-    </div>
-  </footer>
+      {/* Footer */}
+      <footer className="mt-auto border-t py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
+            <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
+            <span>Archivum Lumen</span>
+          </Link>
+          <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
+          <p className="mt-2 text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">
+            Preservation Lab Console | Digital Preservation Environment
+          </p>
+        </div>
+      </footer>
     </div >
   )
 }

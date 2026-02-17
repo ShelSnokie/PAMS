@@ -42,9 +42,8 @@ This portal provides secure, authenticated access to both public records (birth 
 - **🔄 TanStack Query** - Server state management
 
 ### Database & Backend
-- **🗄️ Prisma** - Next-generation ORM (SQLite for dev)
-- **🔐 NextAuth.js** - Authentication solution
-- **🔒 bcryptjs** - Password hashing
+- **(Mocked)** - Frontend-only implementation for demonstration
+- **🔐 NextAuth.js** - Authentication solution (Mocked)
 
 ### Advanced Features
 - **📊 TanStack Table** - Data tables with sorting/filtering
@@ -71,9 +70,6 @@ cd public-records-archives-portal
 # Install dependencies
 bun install
 
-# Set up the database
-bun run db:push
-
 # Run the development server
 bun run dev
 ```
@@ -91,38 +87,31 @@ public-records-archives-portal/
 │   │   ├── collections/          # Record collections
 │   │   ├── login/                # Authentication
 │   │   ├── item/[id]/            # Record detail view
-│   │   └── api/                  # API routes
+│   │   └── api/                  # API routes (Mock/Static)
 │   ├── components/               # React components
 │   │   └── ui/                   # shadcn/ui components
 │   ├── hooks/                    # Custom React hooks
 │   └── lib/                      # Utilities & configs
-├── prisma/
-│   ├── schema.prisma             # Database schema
-│   └── seed-simple.ts            # Database seeding
-├── db/                           # SQLite database (dev)
 ├── public/                       # Static assets
 ├── COLLABORATION.md              # Collaboration guide
 ├── SECURITY_IMPLEMENTATION.md    # Security documentation
 └── SESSION_SUMMARY.md             # Project summary
 ```
 
-## 🗄️ Database Schema
+## 🗄️ Data Structure (Mock)
 
-The database uses a hierarchical archival structure:
+The application uses a hierarchical archival structure for demonstration:
 
 - **RecordGroup** - Top-level grouping (e.g., "Vital Records")
 - **Series** - Sub-groups within RecordGroups
 - **FileUnit** - Individual files or folders
 - **Item** - Individual records or documents
 
-### Key Models
+### Key Entites
 
 - **User** - Users with roles, departments, clearance levels
 - **Department** - 15 specialized departments
 - **AuditLog** - Security event tracking
-- **CertifiedCopyRequest** - Official document requests
-- **PreservationAction** - Conservation treatments
-- **DigitizationProject** - Digital preservation projects
 
 ## 👥 User Roles & Permissions
 
@@ -196,7 +185,6 @@ The database uses a hierarchical archival structure:
 # Development
 bun run dev          # Start development server
 bun run lint         # Run ESLint
-bun run db:push      # Push schema changes to database
 
 # Production (not used in this environment)
 bun run build        # Build for production

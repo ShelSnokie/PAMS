@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  Activity, 
-  Search, 
-  Filter, 
+import {
+  Activity,
+  Search,
+  Filter,
   Download,
   Calendar,
   AlertTriangle,
@@ -19,7 +19,7 @@ import {
   Clock
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -279,7 +279,7 @@ export default function AuditLogsPage() {
               <p className="text-xs text-muted-foreground">Audit Logs Viewer</p>
             </div>
           </div>
-          
+
           <nav className="hidden md:flex items-center gap-6">
             <Link href="/dashboard/admin" className="text-sm font-medium hover:text-primary transition-colors">
               Dashboard
@@ -291,7 +291,7 @@ export default function AuditLogsPage() {
               Settings
             </Link>
           </nav>
-          
+
           <Link href="/api/auth/logout">
             <Button size="sm" variant="outline">
               Sign Out

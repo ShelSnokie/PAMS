@@ -16,12 +16,21 @@ import {
   AlertTriangle,
   MoreHorizontal,
   RefreshCw,
-  FileCheck
+  FileCheck,
+  ChevronRight,
+  Shield
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { Progress } from '@/components/ui/progress'
 import {
   DropdownMenu,
@@ -29,6 +38,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import Link from 'next/link'
 import UserManagement from '@/components/admin/UserManagement'
 
@@ -43,6 +60,8 @@ interface SystemStat {
 export default function SystemAdminDashboard() {
   const [systemStats, setSystemStats] = useState<SystemStat[]>([])
   const [loading, setLoading] = useState(true)
+  const [showSecurityDialog, setShowSecurityDialog] = useState(false)
+  const [showSystemDialog, setShowSystemDialog] = useState(false)
 
   useEffect(() => {
     // Simulate loading system stats
@@ -68,14 +87,6 @@ export default function SystemAdminDashboard() {
     { id: '3', type: 'info', title: 'Scheduled Maintenance', description: 'PostgreSQL maintenance scheduled for 2024-04-01 02:00 UTC', time: '2 hours ago' },
   ]
 
-  const recentActions = [
-    { id: '1', user: 'admin@archives.gov', action: 'Modified system settings', resource: 'System Configuration', time: '2 min ago' },
-    { id: '2', user: 'sysadmin@archives.gov', action: 'Created new user account', resource: 'Users', time: '5 min ago' },
-    { id: '3', user: 'security@archives.gov', action: 'Revoked compromised session', resource: 'Sessions', time: '12 min ago' },
-    { id: '4', user: 'admin@archives.gov', action: 'Updated security policies', resource: 'Permissions', time: '1 hour ago' },
-    { id: '5', user: 'system@archives.gov', action: 'Rotated encryption keys', resource: 'System Security', time: '3 hours ago' },
-  ]
-
   const getStatusBadge = (status?: string) => {
     if (!status) return null
     return (
@@ -94,6 +105,11 @@ export default function SystemAdminDashboard() {
       type === 'warning' ? <AlertTriangle className="h-4 w-4 text-amber-600" /> :
         <Clock className="h-4 w-4 text-blue-600" />
   }
+
+  // Summary logic
+  const criticalAlertsCount = securityAlerts.filter(a => a.type === 'critical').length
+  const warningAlertsCount = securityAlerts.filter(a => a.type === 'warning').length
+  const systemHealthStatus = systemStats.find(s => s.label === 'Server Status')?.status === 'healthy' ? 'Optimal' : 'Issues Detected';
 
   return (
     <div className="min-h-screen bg-background">
@@ -135,18 +151,8 @@ export default function SystemAdminDashboard() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full cursor-pointer">
+                  <Link href="/profile?role=admin" className="flex items-center w-full cursor-pointer">
                     Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center w-full cursor-pointer">
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/audit-logs" className="flex items-center w-full cursor-pointer">
-                    Audit Logs
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
@@ -161,217 +167,360 @@ export default function SystemAdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Security Alerts */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <ShieldAlert className="h-6 w-6 text-red-600" />
-            Security Alerts & Incidents
-          </h2>
-          <div className="grid gap-4 md:grid-cols-3">
-            {securityAlerts.map((alert, index) => (
+
+        {/* Interactive Overview Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          {/* Security Alerts Interactive Card */}
+          <Dialog open={showSecurityDialog} onOpenChange={setShowSecurityDialog}>
+            <DialogTrigger asChild>
               <motion.div
-                key={alert.id}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
+                className="cursor-pointer"
               >
-                <Card className={`border-l-4 ${alert.type === 'critical' ? 'border-red-500' :
+                <Card className="h-full border-l-4 border-l-red-500 hover:shadow-lg transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                    <CardTitle className="text-sm font-medium">Security Status</CardTitle>
+                    <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold flex items-center gap-2">
+                      {criticalAlertsCount > 0 ? 'Critical Attention' : 'Monitor Active'}
+                      {criticalAlertsCount > 0 && <span className="flex h-3 w-3 rounded-full bg-red-500 animate-pulse" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {criticalAlertsCount} critical, {warningAlertsCount} warning alerts
+                    </p>
+                    <div className="mt-4 flex items-center text-sm text-primary font-medium">
+                      View Details <ChevronRight className="ml-1 h-4 w-4" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5 text-red-600" />
+                  Security Alerts & Incidents
+                </DialogTitle>
+                <DialogDescription>Real-time security monitoring feed</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                {securityAlerts.map((alert) => (
+                  <Card key={alert.id} className={`border-l-4 ${alert.type === 'critical' ? 'border-red-500' :
                     alert.type === 'warning' ? 'border-amber-500' :
                       'border-blue-500'
-                  }`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        {getAlertIcon(alert.type)}
-                        <div>
-                          <CardTitle className="text-base">{alert.title}</CardTitle>
-                          <CardDescription className="text-xs">{alert.time}</CardDescription>
+                    }`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          {getAlertIcon(alert.type)}
+                          <div>
+                            <CardTitle className="text-base">{alert.title}</CardTitle>
+                            <CardDescription className="text-xs">{alert.time}</CardDescription>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm">{alert.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm">{alert.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
 
-        {/* System Statistics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">System Statistics</h2>
-            <Button variant="outline" size="sm">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {systemStats.map((stat, index) => (
+          {/* System Stats Interactive Card */}
+          <Dialog open={showSystemDialog} onOpenChange={setShowSystemDialog}>
+            <DialogTrigger asChild>
               <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                transition={{ delay: 0.1 }}
+                whileHover={{ scale: 1.02 }}
+                className="cursor-pointer"
               >
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-3">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {stat.label}
-                    </CardTitle>
-                    <stat.icon className="h-6 w-6 text-primary" />
+                <Card className="h-full border-l-4 border-l-green-500 hover:shadow-lg transition-all">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                    <CardTitle className="text-sm font-medium">System Health</CardTitle>
+                    <Activity className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      {getStatusBadge(stat.status)}
+                    <div className="text-2xl font-bold">{systemHealthStatus}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      All services operational
+                    </p>
+                    <div className="mt-4 flex items-center text-sm text-primary font-medium">
+                      View Metrics <ChevronRight className="ml-1 h-4 w-4" />
                     </div>
-                    {stat.trend && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <TrendingUp className="h-3 w-3" />
-                        {stat.trend}
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
-          </div>
-        </motion.div>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Server className="h-5 w-5 text-primary" />
+                  System Statistics
+                </DialogTitle>
+                <DialogDescription>Detailed performance metrics</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+                {systemStats.map((stat) => (
+                  <Card key={stat.label}>
+                    <CardHeader className="flex flex-row items-center justify-between pb-3">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {stat.label}
+                      </CardTitle>
+                      <stat.icon className="h-6 w-6 text-primary" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div className="text-2xl font-bold">{stat.value}</div>
+                        {getStatusBadge(stat.status)}
+                      </div>
+                      {stat.trend && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <TrendingUp className="h-3 w-3" />
+                          {stat.trend}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="users">
-              <Users className="mr-2 h-4 w-4" />
-              User Management
-            </TabsTrigger>
-            <TabsTrigger value="roles">
-              <ShieldAlert className="mr-2 h-4 w-4" />
-              Role Permissions
-            </TabsTrigger>
-            <TabsTrigger value="settings">
-              <Server className="mr-2 h-4 w-4" />
-              System Settings
-            </TabsTrigger>
-            <TabsTrigger value="audit">
-              <Activity className="mr-2 h-4 w-4" />
-              Audit Logs
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="users" className="space-y-4">
-            <UserManagement />
-          </TabsContent>
-
-          <TabsContent value="roles" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">Role Permissions</h3>
-              <Button>
-                <ShieldAlert className="mr-2 h-4 w-4" />
-                Configure Roles
-              </Button>
-            </div>
-            <Card>
-              <CardContent className="p-12 text-center">
-                <ShieldAlert className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Role & Permission Matrix</h3>
-                <p className="text-muted-foreground mb-4">
-                  Define and manage roles with granular permissions
+          {/* Quick Actions / User Card - Placeholder for balance */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            <Card className="h-full border-l-4 border-l-blue-500 hover:shadow-lg transition-all">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">245</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  +12 active this hour
                 </p>
-                <div className="flex gap-3 justify-center">
-                  <Button variant="outline">Edit Permissions</Button>
-                  <Button>View Matrix</Button>
+                <div className="mt-4 flex items-center text-sm text-primary font-medium">
+                  Manage Users <ChevronRight className="ml-1 h-4 w-4" />
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </motion.div>
+        </div>
 
-          <TabsContent value="settings" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">System Settings</h3>
-              <Button>
-                <Server className="mr-2 h-4 w-4" />
-                Save Configuration
-              </Button>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Database Configuration</CardTitle>
+
+        {/* Main Content - Navigation Menu */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+
+          {/* User Management Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">User Management</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium">Connection Pool Size</label>
-                    <select className="w-full rounded-md border bg-background px-3 py-2">
-                      <option>10 connections</option>
-                      <option>20 connections</option>
-                      <option>50 connections</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Query Timeout</label>
-                    <select className="w-full rounded-md border bg-background px-3 py-2">
-                      <option>30 seconds</option>
-                      <option>60 seconds</option>
-                      <option>120 seconds</option>
-                    </select>
-                  </div>
+                <CardContent>
+                  <div className="text-2xl font-bold">Manage</div>
+                  <p className="text-xs text-muted-foreground">Add, edit, or remove users</p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Security Configuration</CardTitle>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85vw] sm:max-w-4xl overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  User Management
+                </SheetTitle>
+                <SheetDescription>
+                  Manage system access, create new accounts, and update user details.
+                </SheetDescription>
+              </SheetHeader>
+              <UserManagement />
+            </SheetContent>
+          </Sheet>
+
+          {/* Role Permissions Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Role Permissions</CardTitle>
+                  <ShieldAlert className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-sm font-medium">MFA Required</label>
-                      <p className="text-xs text-muted-foreground">For staff accounts</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-green-100 text-green-800">Enabled</Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-sm font-medium">Session Timeout</label>
-                      <p className="text-xs text-muted-foreground">Staff sessions</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge>2 hours</Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-sm font-medium">Max Login Attempts</label>
-                      <p className="text-xs text-muted-foreground">Before lockout</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge>5 attempts</Badge>
-                    </div>
-                  </div>
+                <CardContent>
+                  <div className="text-2xl font-bold">Configure</div>
+                  <p className="text-xs text-muted-foreground">Access control & policies</p>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85vw] sm:max-w-3xl overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5" />
+                  Role Permissions
+                </SheetTitle>
+                <SheetDescription>
+                  Configure granular access controls and role-based permissions.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="grid gap-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Role Configuration</h3>
+                  <Button>
+                    <ShieldAlert className="mr-2 h-4 w-4" />
+                    Add New Role
+                  </Button>
+                </div>
 
-          <TabsContent value="audit" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">Audit Logs</h3>
-              <div className="flex gap-2">
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <ShieldAlert className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Role & Permission Matrix</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Define and manage roles with granular permissions
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <Button variant="outline">Edit Permissions</Button>
+                      <Button>View Matrix</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* System Settings Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">System Settings</CardTitle>
+                  <Server className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Settings</div>
+                  <p className="text-xs text-muted-foreground">Global configuration</p>
+                </CardContent>
+              </Card>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85vw] sm:max-w-2xl overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                  <Server className="h-5 w-5" />
+                  System Settings
+                </SheetTitle>
+                <SheetDescription>
+                  Manage global system configurations and parameters.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="space-y-6">
+                <div className="flex items-center justify-end">
+                  <Button>
+                    <Server className="mr-2 h-4 w-4" />
+                    Save Configuration
+                  </Button>
+                </div>
+                <div className="grid gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Database Configuration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium">Connection Pool Size</label>
+                        <select className="w-full rounded-md border bg-background px-3 py-2">
+                          <option>10 connections</option>
+                          <option>20 connections</option>
+                          <option>50 connections</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Query Timeout</label>
+                        <select className="w-full rounded-md border bg-background px-3 py-2">
+                          <option>30 seconds</option>
+                          <option>60 seconds</option>
+                          <option>120 seconds</option>
+                        </select>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Security Configuration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <label className="text-sm font-medium">MFA Required</label>
+                          <p className="text-xs text-muted-foreground">For staff accounts</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <label className="text-sm font-medium">Session Timeout</label>
+                          <p className="text-xs text-muted-foreground">Staff sessions</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge>2 hours</Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <label className="text-sm font-medium">Max Login Attempts</label>
+                          <p className="text-xs text-muted-foreground">Before lockout</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge>5 attempts</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Audit Logs Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Audit Logs</CardTitle>
+                  <Activity className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Logs</div>
+                  <p className="text-xs text-muted-foreground">Track system activity</p>
+                </CardContent>
+              </Card>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[85vw] sm:max-w-5xl overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <SheetTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Audit Logs
+                </SheetTitle>
+                <SheetDescription>
+                  Review detailed system logs and user activity trails.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="flex items-center justify-end mb-4 gap-2">
                 <Button variant="outline">
                   <Activity className="mr-2 h-4 w-4" />
                   Export Logs
@@ -381,23 +530,23 @@ export default function SystemAdminDashboard() {
                   Refresh
                 </Button>
               </div>
-            </div>
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Activity className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Audit Log Viewer</h3>
-                <p className="text-muted-foreground mb-4">
-                  View and analyze system audit trails
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <Button variant="outline">View Recent</Button>
-                  <Button variant="outline">Filter by User</Button>
-                  <Button>Advanced Search</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Activity className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Audit Log Viewer</h3>
+                  <p className="text-muted-foreground mb-4">
+                    View and analyze system audit trails
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button variant="outline">View Recent</Button>
+                    <Button variant="outline">Filter by User</Button>
+                    <Button>Advanced Search</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </SheetContent>
+          </Sheet>
+        </div>
       </main>
 
       {/* Footer */}

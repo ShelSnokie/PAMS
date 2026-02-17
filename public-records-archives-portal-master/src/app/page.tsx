@@ -8,6 +8,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
 import Link from 'next/link'
+import { useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
+import { Label } from '@/components/ui/label'
 
 const featuredCollections = [
   {
@@ -41,6 +57,8 @@ const featuredCollections = [
 ]
 
 export default function PublicRecordsHome() {
+  const [showUserPortal, setShowUserPortal] = useState(false)
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
@@ -69,6 +87,62 @@ export default function PublicRecordsHome() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <Dialog open={showUserPortal} onOpenChange={setShowUserPortal}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <User className="h-[1.2rem] w-[1.2rem]" />
+                  <span className="sr-only">User Portal</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>User Access Portal</DialogTitle>
+                  <DialogDescription>
+                    Login or create an account to access personalized services.
+                  </DialogDescription>
+                </DialogHeader>
+                <Tabs defaultValue="login" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="login">Login</TabsTrigger>
+                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="login" className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" placeholder="name@example.com" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <Input id="password" type="password" />
+                    </div>
+                    <Button className="w-full" asChild>
+                      <Link href="/dashboard/user">Login</Link>
+                    </Button>
+                  </TabsContent>
+                  <TabsContent value="signup" className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="first-name">First name</Label>
+                        <Input id="first-name" placeholder="John" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="last-name">Last name</Label>
+                        <Input id="last-name" placeholder="Doe" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input id="signup-email" type="email" placeholder="name@example.com" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input id="signup-password" type="password" />
+                    </div>
+                    <Button className="w-full" onClick={() => setShowUserPortal(false)}>Create Account</Button>
+                  </TabsContent>
+                </Tabs>
+              </DialogContent>
+            </Dialog>
             <ThemeToggle />
           </div>
         </div>

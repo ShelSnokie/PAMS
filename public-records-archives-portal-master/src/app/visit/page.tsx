@@ -1,14 +1,52 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Clock, Phone, Mail, ExternalLink, FileCheck, ArrowLeft } from 'lucide-react'
+import { MapPin, Clock, Phone, Mail, ExternalLink, FileCheck, ArrowLeft, Calendar, User, CreditCard, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import Link from 'next/link'
 
 export default function VisitOfficePage() {
+    const [showBooking, setShowBooking] = useState(false)
+    const [showPayment, setShowPayment] = useState(false)
+    const [bookingData, setBookingData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        date: '',
+        time: '',
+        purpose: ''
+    })
+    const [referenceNumber, setReferenceNumber] = useState('')
+    const [bookingConfirmed, setBookingConfirmed] = useState(false)
+
+    const generateReferenceNumber = () => {
+        const date = new Date()
+        const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '')
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+        return `BK-${dateStr}-${random}`
+    }
+
+    const handleBookingSubmit = () => {
+        const refNumber = generateReferenceNumber()
+        setReferenceNumber(refNumber)
+        setBookingConfirmed(true)
+    }
+
+    const handlePaymentSelect = (method: string) => {
+        alert(`Payment method selected: ${method}\nReference: ${referenceNumber}\n\nYou will receive confirmation details via email.`)
+        setShowPayment(false)
+        setShowBooking(false)
+        setBookingConfirmed(false)
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-background">
             {/* Header */}
@@ -141,12 +179,187 @@ export default function VisitOfficePage() {
                                             <ExternalLink className="h-4 w-4" />
                                         </a>
                                     </Button>
-                                    <Button variant="outline" size="lg" asChild>
-                                        <Link href="/help" className="gap-2">
-                                            Booking a Table
-                                            <ArrowLeft className="h-4 w-4 rotate-180" />
-                                        </Link>
-                                    </Button>
+                                    <Sheet open={showBooking} onOpenChange={setShowBooking}>
+                                        <SheetTrigger asChild>
+                                            <Button variant="outline" size="lg" className="gap-2">
+                                                Book a Table
+                                                <Calendar className="h-4 w-4" />
+                                            </Button>
+                                        </SheetTrigger>
+                                        <SheetContent className="overflow-y-auto sm:max-w-xl">
+                                            <SheetHeader className="mb-6">
+                                                <SheetTitle>Book a Research Table</SheetTitle>
+                                                <SheetDescription>
+                                                    Reserve a table for your research visit. You'll receive a reference number for your booking.
+                                                </SheetDescription>
+                                            </SheetHeader>
+
+                                            {!bookingConfirmed ? (
+                                                <div className="space-y-6">
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="name">Full Name *</Label>
+                                                            <Input
+                                                                id="name"
+                                                                value={bookingData.name}
+                                                                onChange={(e) => setBookingData({ ...bookingData, name: e.target.value })}
+                                                                placeholder="John Doe"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="phone">Phone Number *</Label>
+                                                            <Input
+                                                                id="phone"
+                                                                value={bookingData.phone}
+                                                                onChange={(e) => setBookingData({ ...bookingData, phone: e.target.value })}
+                                                                placeholder="+263..."
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="email">Email Address *</Label>
+                                                        <Input
+                                                            id="email"
+                                                            type="email"
+                                                            value={bookingData.email}
+                                                            onChange={(e) => setBookingData({ ...bookingData, email: e.target.value })}
+                                                            placeholder="john@example.com"
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="date">Visit Date *</Label>
+                                                            <Input
+                                                                id="date"
+                                                                type="date"
+                                                                value={bookingData.date}
+                                                                onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="time">Preferred Time *</Label>
+                                                            <Input
+                                                                id="time"
+                                                                type="time"
+                                                                value={bookingData.time}
+                                                                onChange={(e) => setBookingData({ ...bookingData, time: e.target.value })}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="purpose">Purpose of Visit *</Label>
+                                                        <Textarea
+                                                            id="purpose"
+                                                            value={bookingData.purpose}
+                                                            onChange={(e) => setBookingData({ ...bookingData, purpose: e.target.value })}
+                                                            placeholder="Brief description of your research..."
+                                                            rows={3}
+                                                        />
+                                                    </div>
+
+                                                    <Button className="w-full" size="lg" onClick={handleBookingSubmit}>
+                                                        Confirm Booking
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-6">
+                                                    <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">
+                                                        <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
+                                                        <h3 className="text-xl font-bold mb-2">Booking Confirmed!</h3>
+                                                        <p className="text-sm text-muted-foreground mb-4">
+                                                            Your table has been reserved. Please save your reference number.
+                                                        </p>
+                                                        <div className="bg-background rounded-lg p-4 mb-4">
+                                                            <p className="text-xs text-muted-foreground mb-1">Reference Number</p>
+                                                            <p className="text-2xl font-bold text-primary">{referenceNumber}</p>
+                                                        </div>
+                                                        <div className="text-left space-y-2 text-sm">
+                                                            <p><strong>Name:</strong> {bookingData.name}</p>
+                                                            <p><strong>Date:</strong> {bookingData.date}</p>
+                                                            <p><strong>Time:</strong> {bookingData.time}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <Sheet open={showPayment} onOpenChange={setShowPayment}>
+                                                        <SheetTrigger asChild>
+                                                            <Button className="w-full" size="lg">
+                                                                <CreditCard className="mr-2 h-4 w-4" />
+                                                                Proceed to Payment
+                                                            </Button>
+                                                        </SheetTrigger>
+                                                        <SheetContent>
+                                                            <SheetHeader className="mb-6">
+                                                                <SheetTitle>Payment Options</SheetTitle>
+                                                                <SheetDescription>
+                                                                    Select your preferred payment method
+                                                                </SheetDescription>
+                                                            </SheetHeader>
+
+                                                            <div className="space-y-3">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-full justify-start h-auto py-4"
+                                                                    onClick={() => handlePaymentSelect('Bank Transfer')}
+                                                                >
+                                                                    <div className="text-left">
+                                                                        <p className="font-semibold">Bank Transfer</p>
+                                                                        <p className="text-xs text-muted-foreground">Direct bank deposit</p>
+                                                                    </div>
+                                                                </Button>
+
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-full justify-start h-auto py-4"
+                                                                    onClick={() => handlePaymentSelect('EcoCash')}
+                                                                >
+                                                                    <div className="text-left">
+                                                                        <p className="font-semibold">EcoCash</p>
+                                                                        <p className="text-xs text-muted-foreground">Mobile money payment</p>
+                                                                    </div>
+                                                                </Button>
+
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-full justify-start h-auto py-4"
+                                                                    onClick={() => handlePaymentSelect('OneMoney')}
+                                                                >
+                                                                    <div className="text-left">
+                                                                        <p className="font-semibold">OneMoney</p>
+                                                                        <p className="text-xs text-muted-foreground">NetOne mobile payment</p>
+                                                                    </div>
+                                                                </Button>
+
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-full justify-start h-auto py-4"
+                                                                    onClick={() => handlePaymentSelect('InBucks')}
+                                                                >
+                                                                    <div className="text-left">
+                                                                        <p className="font-semibold">InBucks</p>
+                                                                        <p className="text-xs text-muted-foreground">Digital wallet payment</p>
+                                                                    </div>
+                                                                </Button>
+
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-full justify-start h-auto py-4"
+                                                                    onClick={() => handlePaymentSelect('Cash Upon Arrival')}
+                                                                >
+                                                                    <div className="text-left">
+                                                                        <p className="font-semibold">Cash Upon Arrival</p>
+                                                                        <p className="text-xs text-muted-foreground">Pay when you visit</p>
+                                                                    </div>
+                                                                </Button>
+                                                            </div>
+                                                        </SheetContent>
+                                                    </Sheet>
+                                                </div>
+                                            )}
+                                        </SheetContent>
+                                    </Sheet>
                                 </div>
                             </motion.div>
 
