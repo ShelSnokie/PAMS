@@ -36,6 +36,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface CuratedCollection {
@@ -75,6 +78,12 @@ export default function SubjectSpecialistDashboard() {
   const [preservationTasks, setPreservationTasks] = useState<DigitalPreservationTask[]>([])
   const [projects, setProjects] = useState<ResearchProject[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  const handleSignOut = () => {
+    document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    router.push('/login')
+  }
 
   useEffect(() => {
     setTimeout(() => {
@@ -266,12 +275,12 @@ export default function SubjectSpecialistDashboard() {
         <div className="container mx-auto px-4 flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-              <div className="h-10 w-10 flex items-center justify-center">
-                <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+              <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
+                <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">Public Records & Archives Portal</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Official Records Access System</p>
+                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
               </div>
             </Link>
             <div className="h-8 w-px bg-border hidden md:block" />
@@ -287,6 +296,7 @@ export default function SubjectSpecialistDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Dr. Marcus Johnson</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Collections Development</p>
@@ -308,10 +318,11 @@ export default function SubjectSpecialistDashboard() {
                     Settings
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
-                  <Link href="/api/auth/logout" className="flex items-center w-full cursor-pointer">
-                    Sign Out
-                  </Link>
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                >
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -631,19 +642,7 @@ export default function SubjectSpecialistDashboard() {
         </Tabs>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-            <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span>Archivum Lumen</span>
-          </Link>
-          <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">
-            Collection Development Console | Professional Access
-          </p>
-        </div>
-      </footer>
+      <AnimatedFooter />
     </div >
   )
 }

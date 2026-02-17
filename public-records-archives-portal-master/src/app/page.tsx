@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import Link from 'next/link'
 import { useState } from 'react'
 import {
@@ -355,59 +356,7 @@ export default function PublicRecordsHome() {
 
 
 
-      {/* Footer */}
-      <footer className="mt-auto border-t py-8">
-        <div className="container mx-auto px-4">
-          <div className="grid gap-8 md:grid-cols-4">
-            <Link href="/" className="space-y-3 flex flex-col items-center text-center hover:opacity-80 transition-opacity group">
-              <div className="flex items-center gap-2 font-bold text-primary">
-                <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-                <span>Archivum Lumen</span>
-              </div>
-              <p className="text-sm text-muted-foreground text-center">
-                Providing secure and convenient access to official public records and historical archives.
-              </p>
-            </Link>
-            <div className="flex flex-col items-center text-center">
-              <h3 className="font-semibold mb-3">Portal</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
-                <li><Link href="/collections" className="hover:text-primary transition-colors">Record Types</Link></li>
-                <li><Link href="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
-              </ul>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <h3 className="font-semibold mb-3">Services</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/services/certificates" className="hover:text-primary transition-colors">Certificates</Link></li>
-                <li><Link href="/services/copies" className="hover:text-primary transition-colors">Document Copies</Link></li>
-                <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-              </ul>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <h3 className="font-semibold mb-3">For Staff</h3>
-              <div className="flex justify-center gap-2">
-                <Link href="/login">
-                  <Button variant="outline" size="sm">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Staff Portal
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-            <p>© {new Date().getFullYear()} Public Records Portal. All rights reserved.</p>
-            <p className="mt-2">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              {' • '}
-              <Link href="/accessibility" className="hover:text-primary transition-colors">Accessibility</Link>
-              {' • '}
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-            </p>
-          </div>
-        </div>
-      </footer >
-    </div >
+      <AnimatedFooter />
+    </div>
   )
 }

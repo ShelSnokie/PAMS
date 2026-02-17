@@ -37,12 +37,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
+import { useRouter } from 'next/navigation'
 
 export default function UserDashboard() {
     const [userName] = useState('John Researcher')
     const [selectedSearch, setSelectedSearch] = useState<any>(null)
     const [selectedRecord, setSelectedRecord] = useState<any>(null)
     const [showVisitsDialog, setShowVisitsDialog] = useState(false)
+    const router = useRouter()
+
+    const handleSignOut = () => {
+        document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+        router.push('/login')
+    }
 
     const recentSearches = [
         { id: 1, query: 'Birth Certificate 1985', date: '2024-02-15', results: 3, details: 'Search performed in Vital Records collection. Found 3 matching certificates from 1985.' },
@@ -67,12 +75,12 @@ export default function UserDashboard() {
             <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto px-4 flex h-16 items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                        <div className="h-10 w-10 flex items-center justify-center">
-                            <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                        <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
+                            <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                         </div>
                         <div>
-                            <h1 className="font-bold text-sm leading-tight">Public Records & Archives Portal</h1>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">User Dashboard</p>
+                            <h1 className="font-bold text-sm leading-tight">National Archives</h1>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
                         </div>
                     </Link>
 
@@ -101,11 +109,12 @@ export default function UserDashboard() {
                                         Settings
                                     </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
-                                    <Link href="/" className="flex items-center w-full cursor-pointer">
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        Sign Out
-                                    </Link>
+                                <DropdownMenuItem
+                                    onClick={handleSignOut}
+                                    className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                                >
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    Sign Out
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -379,16 +388,7 @@ export default function UserDashboard() {
                 </DialogContent>
             </Dialog>
 
-            {/* Footer */}
-            <footer className="mt-auto border-t py-8">
-                <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-                    <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-                        <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-                        <span>Archivum Lumen</span>
-                    </Link>
-                    <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-                </div>
-            </footer>
+            <AnimatedFooter />
         </div>
     )
 }

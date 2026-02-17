@@ -31,6 +31,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
+import { useRouter } from 'next/navigation'
 
 interface ScanJob {
   id: string
@@ -51,6 +54,12 @@ interface ScanJob {
 export default function DigitizationTechnicianDashboard() {
   const [jobs, setJobs] = useState<ScanJob[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  const handleSignOut = () => {
+    document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    router.push('/login')
+  }
 
   useEffect(() => {
     setTimeout(() => {
@@ -199,21 +208,28 @@ export default function DigitizationTechnicianDashboard() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+            <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
+              <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="font-bold text-sm leading-tight">National Archives</h1>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
+            </div>
+          </Link>
+          <div className="h-8 w-px bg-border hidden md:block" />
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
-              <Scan className="h-5 w-5 text-primary-foreground" />
+            <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
+              <Scan className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="font-bold text-lg">Digitization Technician Dashboard</h1>
-              <p className="text-xs text-muted-foreground">Digital Imaging Lab</p>
+              <h1 className="font-bold text-sm">Digitization Technician</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Digital Imaging Console</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">Mike Thompson</p>
-              <p className="text-xs text-muted-foreground">Digitization Unit A</p>
-            </div>
+            <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -221,20 +237,17 @@ export default function DigitizationTechnicianDashboard() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Link href="/profile" className="flex items-center w-full">
-                    Profile
-                  </Link>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex items-center w-full cursor-pointer">Profile</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/settings" className="flex items-center w-full">
-                    Settings
-                  </Link>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex items-center w-full cursor-pointer">Settings</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/api/auth/logout" className="flex items-center w-full text-destructive">
-                    Sign Out
-                  </Link>
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                >
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -514,19 +527,7 @@ export default function DigitizationTechnicianDashboard() {
         </Tabs>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-            <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span>Archivum Lumen</span>
-          </Link>
-          <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.2em] font-bold opacity-50">
-            Digital Imaging Console | Production Environment
-          </p>
-        </div>
-      </footer>
+      <AnimatedFooter />
     </div>
   )
 }

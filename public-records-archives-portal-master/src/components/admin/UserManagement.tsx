@@ -11,7 +11,8 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  Shield
+  Shield,
+  Check
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,7 +22,8 @@ import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DEPARTMENTS } from '@/lib/constants/departments'
-import { USER_ROLES, ROLE_DISPLAY_NAMES } from '@/lib/constants/roles'
+import { USER_ROLES, ROLE_DISPLAY_NAMES, ACCESS_CONTROL } from '@/lib/constants/roles'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface User {
   id: string
@@ -30,9 +32,9 @@ interface User {
   fullName: string | null
   employeeId: string | null
   department: string | null
-  role: string
+  roles: string[]
   status: string
-  clearanceLevel: string
+  accessControl: string
   mfaEnabled: boolean
   lastLogin: string | null
   createdAt: string
@@ -54,16 +56,12 @@ export default function UserManagement() {
     fullName: '',
     employeeId: '',
     department: '',
-    role: '',
-    clearanceLevel: 'RESTRICTED',
+    roles: [] as string[],
+    accessControl: ACCESS_CONTROL.RESTRICTED as string,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Fetch users
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
   const fetchUsers = async () => {
     try {
       setLoading(true)
@@ -79,22 +77,47 @@ export default function UserManagement() {
     }
   }
 
-  // Filter users
-  const filteredUsers = users.filter(user => {
-    const matchesSearch =
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (user.fullName && user.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
+  useEffect(() => {
+    fetchUsers()
+  }, [])
 
-    const matchesDepartment = selectedDepartment === 'all' || user.department === selectedDepartment
-    const matchesRole = selectedRole === 'all' || user.role === selectedRole
+  // Handle user approval
+  const handleApprove = async (id: string, roles: string[], accessControl: string) => {
+    try {
+      const response = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+          roles,
+          accessControl,
+          action: 'approve'
+        }),
+      })
 
-    return matchesSearch && matchesDepartment && matchesRole
-  })
+      const data = await response.json()
+
+      if (data.success) {
+        fetchUsers()
+        alert('User approved successfully!')
+      } else {
+        alert(data.error || 'Failed to approve user')
+      }
+    } catch (error) {
+      console.error('Error approving user:', error)
+      alert('Failed to approve user')
+    }
+  }
 
   // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (formData.roles.length === 0) {
+      alert('Please select at least one role')
+      return
+    }
     setIsSubmitting(true)
 
     try {
@@ -117,8 +140,8 @@ export default function UserManagement() {
           fullName: '',
           employeeId: '',
           department: '',
-          role: '',
-          clearanceLevel: 'RESTRICTED',
+          roles: [],
+          accessControl: ACCESS_CONTROL.RESTRICTED,
         })
         fetchUsers()
         alert('User created successfully!')
@@ -133,10 +156,35 @@ export default function UserManagement() {
     }
   }
 
+  const toggleRole = (role: string) => {
+    setFormData(prev => ({
+      ...prev,
+      roles: prev.roles.includes(role)
+        ? prev.roles.filter(r => r !== role)
+        : [...prev.roles, role]
+    }))
+  }
+
+  // Filter users
+  const filteredUsers = users.filter(user => {
+    const matchesSearch =
+      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (user.fullName && user.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    const matchesDepartment = selectedDepartment === 'all' || user.department === selectedDepartment
+    const matchesRole = selectedRole === 'all' || user.roles.includes(selectedRole)
+
+    return matchesSearch && matchesDepartment && matchesRole
+  })
+
   // Get status badge
   const getStatusBadge = (status: string) => {
     if (status === 'active') {
       return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Active</Badge>
+    }
+    if (status === 'pending') {
+      return <Badge className="bg-blue-100 text-blue-800 animate-pulse"><Loader2 className="h-3 w-3 mr-1" />Pending</Badge>
     }
     if (status === 'suspended') {
       return <Badge className="bg-amber-100 text-amber-800"><Shield className="h-3 w-3 mr-1" />Suspended</Badge>
@@ -162,9 +210,9 @@ export default function UserManagement() {
           </SheetTrigger>
           <SheetContent className="overflow-y-auto sm:max-w-xl">
             <SheetHeader className="mb-6">
-              <SheetTitle>Add New User</SheetTitle>
+              <SheetTitle>Add New Staff</SheetTitle>
               <SheetDescription>
-                Create a new user account. They will receive their login credentials via email.
+                Create a new staff account with specific roles and access controls.
               </SheetDescription>
             </SheetHeader>
 
@@ -200,7 +248,7 @@ export default function UserManagement() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    placeholder="john@example.com"
+                    placeholder="john@archive.gov.zw"
                   />
                 </div>
 
@@ -226,50 +274,54 @@ export default function UserManagement() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role *</Label>
-                    <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })} required>
-                      <SelectTrigger id="role">
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(USER_ROLES).map(([key, value]) => (
-                          <SelectItem key={key} value={value}>{ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department</Label>
+                  <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
+                    <SelectTrigger id="department">
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(DEPARTMENTS).filter(d => d !== 'ALL').map((dept) => (
+                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-                      <SelectTrigger id="department">
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(DEPARTMENTS).filter(d => d !== 'ALL').map((dept) => (
-                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                <div className="space-y-3">
+                  <Label>Assign Roles (Select all that apply) *</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-4 border rounded-md bg-muted/20">
+                    {Object.entries(USER_ROLES).map(([key, value]) => (
+                      <div key={key} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`role-${value}`}
+                          checked={formData.roles.includes(value)}
+                          onCheckedChange={() => toggleRole(value)}
+                        />
+                        <label
+                          htmlFor={`role-${value}`}
+                          className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="clearanceLevel">Clearance Level</Label>
+                  <Label htmlFor="accessControl">Access Control Level</Label>
                   <Select
-                    value={formData.clearanceLevel}
-                    onValueChange={(value) => setFormData({ ...formData, clearanceLevel: value })}
+                    value={formData.accessControl}
+                    onValueChange={(value) => setFormData({ ...formData, accessControl: value })}
                   >
-                    <SelectTrigger id="clearanceLevel">
-                      <SelectValue placeholder="Select clearance" />
+                    <SelectTrigger id="accessControl">
+                      <SelectValue placeholder="Select level" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="RESTRICTED">Restricted</SelectItem>
-                      <SelectItem value="CONFIDENTIAL">Confidential</SelectItem>
-                      <SelectItem value="SECRET">Secret</SelectItem>
-                      <SelectItem value="TOP_SECRET">Top Secret</SelectItem>
+                      {Object.entries(ACCESS_CONTROL).map(([key, value]) => (
+                        <SelectItem key={key} value={value}>{value}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -288,7 +340,7 @@ export default function UserManagement() {
                   ) : (
                     <>
                       <Plus className="mr-2 h-4 w-4" />
-                      Create User
+                      Create Staff
                     </>
                   )}
                 </Button>
@@ -306,7 +358,7 @@ export default function UserManagement() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="Search staff..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -329,7 +381,7 @@ export default function UserManagement() {
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="all">Any Role</SelectItem>
                 {Object.entries(USER_ROLES).map(([key, value]) => (
                   <SelectItem key={key} value={value}>{ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}</SelectItem>
                 ))}
@@ -343,66 +395,158 @@ export default function UserManagement() {
       {loading ? (
         <Card className="p-12 text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Loading users...</p>
+          <p className="text-muted-foreground">Loading staff records...</p>
         </Card>
       ) : filteredUsers.length === 0 ? (
         <Card className="p-12 text-center">
           <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No users found</h3>
+          <h3 className="text-lg font-semibold mb-2">No staff found</h3>
           <p className="text-muted-foreground mb-4">
-            {searchQuery || selectedDepartment !== 'all' || selectedRole !== 'all'
-              ? 'Try adjusting your filters'
-              : 'Get started by adding your first user'}
+            Try adjusting your filters or adding new staff.
           </p>
-          {!searchQuery && selectedDepartment === 'all' && selectedRole === 'all' && (
-            <div className="flex justify-center">
-              {/* Fallback button if list empty too */}
-              <Button onClick={() => setShowAddModal(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add First User
-              </Button>
-            </div>
-          )}
         </Card>
       ) : (
-        <div className="rounded-md border">
+        <div className="rounded-md border shadow-sm overflow-hidden bg-card">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="px-4 py-3 text-left text-sm font-medium">User</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Role</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Department</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">MFA</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Last Login</th>
+                  <th className="px-4 py-3 text-left font-semibold">Staff Member</th>
+                  <th className="px-4 py-3 text-left font-semibold">Roles</th>
+                  <th className="px-4 py-3 text-left font-semibold">Department</th>
+                  <th className="px-4 py-3 text-left font-semibold">Access</th>
+                  <th className="px-4 py-3 text-left font-semibold">Status</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-muted/50">
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium">{user.fullName || user.username}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <tr key={user.id} className="border-b hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-foreground">{user.fullName || user.username}</span>
+                        <span className="text-xs text-muted-foreground lowercase">{user.email}</span>
+                        {user.status === 'pending' && (
+                          <Badge variant="secondary" className="mt-1 w-fit text-[9px] bg-blue-50 text-blue-700 hover:bg-blue-100">Pending Verification</Badge>
+                        )}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <Badge variant="outline">
-                        {ROLE_DISPLAY_NAMES[user.role as keyof typeof ROLE_DISPLAY_NAMES] || user.role}
+                    <td className="px-4 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles.map(role => (
+                          <Badge key={role} variant="outline" className="text-[10px] py-0 h-5">
+                            {ROLE_DISPLAY_NAMES[role as keyof typeof ROLE_DISPLAY_NAMES] || role}
+                          </Badge>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-muted-foreground">{user.department || '-'}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <Badge className="bg-slate-100 text-slate-700 border-slate-200">
+                        {user.accessControl}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-sm">{user.department || '-'}</td>
-                    <td className="px-4 py-3">{getStatusBadge(user.status)}</td>
-                    <td className="px-4 py-3">
-                      {user.mfaEnabled ? (
-                        <Shield className="h-4 w-4 text-green-600" />
+                    <td className="px-4 py-4">{getStatusBadge(user.status)}</td>
+                    <td className="px-4 py-4 text-right">
+                      {user.status === 'pending' ? (
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button size="sm" className="h-8 bg-blue-600 hover:bg-blue-700">
+                              Verify
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent className="sm:max-w-md overflow-y-auto">
+                            <SheetHeader>
+                              <SheetTitle>Verify Staff Account</SheetTitle>
+                              <SheetDescription>
+                                Review information and assign active roles.
+                              </SheetDescription>
+                            </SheetHeader>
+                            <div className="space-y-6 py-6">
+                              <div className="space-y-3 rounded-lg bg-muted/40 p-4 border text-xs">
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Requested By:</span>
+                                  <span className="font-medium">{user.fullName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Department:</span>
+                                  <span className="font-medium">{user.department}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Employee ID:</span>
+                                  <span className="font-medium">{user.employeeId}</span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div className="space-y-3">
+                                  <Label className="text-sm">Assign Roles (Multi-select) *</Label>
+                                  <div className="grid grid-cols-1 gap-1.5 max-h-48 overflow-y-auto p-3 border rounded-md bg-white">
+                                    {Object.entries(USER_ROLES).map(([key, value]) => (
+                                      <div key={key} className="flex items-center space-x-2">
+                                        <Checkbox
+                                          id={`verify-role-${user.id}-${value}`}
+                                          onCheckedChange={(checked) => {
+                                            const currentRoles = (window as any)[`roles_${user.id}`] || [];
+                                            const updatedRoles = checked
+                                              ? [...currentRoles, value]
+                                              : currentRoles.filter((r: string) => r !== value);
+                                            (window as any)[`roles_${user.id}`] = updatedRoles;
+                                          }}
+                                        />
+                                        <label htmlFor={`verify-role-${user.id}-${value}`} className="text-xs">
+                                          {ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}
+                                        </label>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label className="text-sm">Access Control Level</Label>
+                                  <Select
+                                    defaultValue={ACCESS_CONTROL.RESTRICTED}
+                                    onValueChange={(value) => {
+                                      (window as any)[`access_${user.id}`] = value;
+                                    }}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {Object.entries(ACCESS_CONTROL).map(([key, value]) => (
+                                        <SelectItem key={key} value={value}>{value}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <Button
+                                  className="w-full mt-2"
+                                  onClick={() => {
+                                    const selectedRoles = (window as any)[`roles_${user.id}`];
+                                    const selectedAccess = (window as any)[`access_${user.id}`] || ACCESS_CONTROL.RESTRICTED;
+
+                                    if (!selectedRoles || selectedRoles.length === 0) {
+                                      alert('Please select at least one role');
+                                      return;
+                                    }
+                                    handleApprove(user.id, selectedRoles, selectedAccess);
+                                  }}
+                                >
+                                  Activate Account
+                                </Button>
+                              </div>
+                            </div>
+                          </SheetContent>
+                        </Sheet>
                       ) : (
-                        <Shield className="h-4 w-4 text-muted-foreground" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Edit className="h-4 w-4" />
+                        </Button>
                       )}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
                     </td>
                   </tr>
                 ))}

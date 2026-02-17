@@ -112,11 +112,14 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
   }
-  body {
-    @apply bg-background text-foreground;
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
   }
 }

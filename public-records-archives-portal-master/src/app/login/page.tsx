@@ -25,21 +25,7 @@ export default function LoginPage() {
     setIsLoading(true)
     setError('')
 
-    // Mock Authentication Logic for Demo
-    const mockUsers: Record<string, { pass: string, url: string }> = {
-      'admin': { pass: 'admin123', url: '/dashboard/admin' },
-      'archivist': { pass: 'arch123', url: '/dashboard/executive' },
-      'researcher': { pass: 'res123', url: '/dashboard/reference' }
-    }
-
     const { username, password } = loginData
-    if (mockUsers[username] && mockUsers[username].pass === password) {
-      setTimeout(() => {
-        window.location.href = mockUsers[username].url
-        setIsLoading(false)
-      }, 1000)
-      return
-    }
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -48,19 +34,28 @@ export default function LoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...loginData,
+          username,
+          password
         }),
       })
 
       const data = await response.json()
 
       if (data.success) {
+        // Set cookie for role-based routing (comma-separated for multi-roles)
+        const roles = data.user.roles.join(',')
+        document.cookie = `user_role=${roles}; path=/; max-age=3600; SameSite=Lax`
+
         window.location.href = data.dashboardUrl || '/'
       } else {
-        setError(data.error || 'Login failed')
+        if (data.error === 'Account pending verification') {
+          setError('Your account is currently pending administrator verification. Please check back later.')
+        } else {
+          setError(data.error || 'Login failed')
+        }
       }
     } catch (err) {
-      setError('Invalid credentials for this demo. Please use the demo accounts below.')
+      setError('Invalid credentials. Please contact the administrator.')
     } finally {
       setIsLoading(false)
     }
@@ -222,6 +217,12 @@ export default function LoginPage() {
             <div className="text-center text-sm">
               <Link href="/help" className="text-primary hover:underline">
                 Need help logging in?
+              </Link>
+            </div>
+            <div className="text-center text-sm">
+              New staff member?{' '}
+              <Link href="/register" className="text-primary hover:underline font-semibold">
+                Register for access
               </Link>
             </div>
             <div className="text-center text-sm">

@@ -49,6 +49,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface SecurityEvent {
@@ -90,6 +93,12 @@ export default function SystemAdminDashboard() {
   const [stats, setStats] = useState<SystemStat[]>([])
   const [settings, setSettings] = useState<SecuritySetting[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  const handleSignOut = () => {
+    document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    router.push('/login')
+  }
 
   useEffect(() => {
     setTimeout(() => {
@@ -189,10 +198,12 @@ export default function SystemAdminDashboard() {
         <div className="container mx-auto px-4 flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-              <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+              <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
+                <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+              </div>
               <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">Public Records & Archives Portal</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Official Records Access System</p>
+                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
               </div>
             </Link>
             <div className="h-8 w-px bg-border hidden md:block" />
@@ -206,6 +217,7 @@ export default function SystemAdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Officer John Smith</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Security Services</p>
@@ -217,9 +229,18 @@ export default function SystemAdminDashboard() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive">Sign Out</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex items-center w-full cursor-pointer">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex items-center w-full cursor-pointer">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                >
+                  Sign Out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -370,11 +391,7 @@ export default function SystemAdminDashboard() {
         </div>
       </main>
 
-      <footer className="border-t py-8 mt-12 bg-muted/20">
-        <div className="container mx-auto px-4 text-center text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} Archivum Lumen. Secure Console Access.</p>
-        </div>
-      </footer>
+      <AnimatedFooter />
     </div>
   )
 }

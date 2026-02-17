@@ -1,21 +1,73 @@
 // Mock Authentication for Frontend-First Development
-// Removed dependencies on Prisma, jose, and bcryptjs
+// Synchronized with NAZ official roles
 
 export enum UserRole {
-  PUBLIC = "PUBLIC",
-  REGISTERED_RESEARCHER = "REGISTERED_RESEARCHER",
-  DIGITIZATION_TECH = "DIGITIZATION_TECH",
-  CONSERVATION_ASSISTANT = "CONSERVATION_ASSISTANT",
-  METADATA_SPECIALIST = "METADATA_SPECIALIST",
-  REFERENCE_ARCHIVIST = "REFERENCE_ARCHIVIST",
-  OUTREACH_COORDINATOR = "OUTREACH_COORDINATOR",
-  PROCESSING_ARCHIVIST = "PROCESSING_ARCHIVIST",
-  SUBJECT_SPECIALIST = "SUBJECT_SPECIALIST",
-  DEPARTMENT_HEAD = "DEPARTMENT_HEAD",
-  PRESERVATION_MANAGER = "PRESERVATION_MANAGER",
-  NATIONAL_ARCHIVIST = "NATIONAL_ARCHIVIST",
-  SECURITY_OFFICER = "SECURITY_OFFICER",
-  SYSTEM_ADMIN = "SYSTEM_ADMIN",
+  // Executive
+  DIRECTOR = 'DIRECTOR',
+  DEPUTY_DIRECTOR_ARCHIVES = 'DEPUTY_DIRECTOR_ARCHIVES',
+  DEPUTY_DIRECTOR_ADMIN = 'DEPUTY_DIRECTOR_ADMIN',
+
+  // Processing
+  CHIEF_ARCHIVIST = 'CHIEF_ARCHIVIST',
+  GOVT_RECORDS_SPECIALIST = 'GOVT_RECORDS_SPECIALIST',
+  RECORDS_MANAGEMENT_OFFICER = 'RECORDS_MANAGEMENT_OFFICER',
+  ACCESSIONING_OFFICER = 'ACCESSIONING_OFFICER',
+  CATALOGUING_OFFICER = 'CATALOGUING_OFFICER',
+  RECORDS_CENTRE_OFFICER = 'RECORDS_CENTRE_OFFICER',
+
+  // Preservation
+  CHIEF_CONSERVATOR = 'CHIEF_CONSERVATOR',
+  PAPER_CONSERVATOR = 'PAPER_CONSERVATOR',
+  PHOTOGRAPHIC_CONSERVATOR = 'PHOTOGRAPHIC_CONSERVATOR',
+  CONSERVATION_TECHNICIAN = 'CONSERVATION_TECHNICIAN',
+  ENVIRONMENTAL_OFFICER = 'ENVIRONMENTAL_OFFICER',
+
+  // Digital & ICT
+  HEAD_DIGITAL_ARCHIVES = 'HEAD_DIGITAL_ARCHIVES',
+  DIGITAL_ARCHIVIST = 'DIGITAL_ARCHIVIST',
+  DIGITIZATION_OFFICER = 'DIGITIZATION_OFFICER',
+  SYSTEMS_ADMINISTRATOR = 'SYSTEMS_ADMINISTRATOR',
+  DATABASE_ADMINISTRATOR = 'DATABASE_ADMINISTRATOR',
+
+  // Public Access
+  HEAD_PUBLIC_SERVICES = 'HEAD_PUBLIC_SERVICES',
+  REFERENCE_ARCHIVIST = 'REFERENCE_ARCHIVIST',
+  READING_ROOM_SUPERVISOR = 'READING_ROOM_SUPERVISOR',
+  RESEARCH_ASSISTANT = 'RESEARCH_ASSISTANT',
+  REPROGRAPHICS_OFFICER = 'REPROGRAPHICS_OFFICER',
+
+  // Audiovisual
+  AUDIOVISUAL_ARCHIVIST = 'AUDIOVISUAL_ARCHIVIST',
+  ORAL_HISTORY_COORDINATOR = 'ORAL_HISTORY_COORDINATOR',
+  AV_TECHNICIAN = 'AV_TECHNICIAN',
+
+  // Outreach
+  OUTREACH_OFFICER = 'OUTREACH_OFFICER',
+  EXHIBITIONS_CURATOR = 'EXHIBITIONS_CURATOR',
+  PUBLICATIONS_OFFICER = 'PUBLICATIONS_OFFICER',
+  COMMUNICATIONS_OFFICER = 'COMMUNICATIONS_OFFICER',
+
+  // Admin & Corp Services
+  HR_MANAGER = 'HR_MANAGER',
+  FINANCE_OFFICER = 'FINANCE_OFFICER',
+  PROCUREMENT_OFFICER = 'PROCUREMENT_OFFICER',
+  LEGAL_COMPLIANCE_OFFICER = 'LEGAL_COMPLIANCE_OFFICER',
+  ADMINISTRATIVE_OFFICER = 'ADMINISTRATIVE_OFFICER',
+
+  // Security
+  SECURITY_MANAGER = 'SECURITY_MANAGER',
+  SECURITY_OFFICER = 'SECURITY_OFFICER',
+  FACILITIES_MANAGER = 'FACILITIES_MANAGER',
+  MAINTENANCE_STAFF = 'MAINTENANCE_STAFF',
+
+  // Provincial
+  PROVINCIAL_ARCHIVIST = 'PROVINCIAL_ARCHIVIST',
+  REGIONAL_RECORDS_OFFICER = 'REGIONAL_RECORDS_OFFICER',
+
+  // Standard User
+  PUBLIC = 'PUBLIC',
+  REGISTERED_RESEARCHER = 'REGISTERED_RESEARCHER',
+  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
 }
 
 export enum PermissionAction {
@@ -52,7 +104,7 @@ export enum Resource {
 
 export interface JWTPayload {
   userId: string
-  role: UserRole
+  roles: UserRole[]
   email: string
   username: string
   mfaVerified: boolean
@@ -68,7 +120,7 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
   // Always return a mock admin payload for development
   return {
     userId: "mock-admin-id",
-    role: UserRole.SYSTEM_ADMIN,
+    roles: [UserRole.SYSTEM_ADMIN],
     email: "admin@example.com",
     username: "admin",
     mfaVerified: true,
@@ -83,30 +135,37 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return password === hash
 }
 
-export const ROLE_ROUTES: Record<UserRole, string[]> = {
-  PUBLIC: ['/', '/search', '/collections', '/login'],
-  REGISTERED_RESEARCHER: ['/', '/search', '/collections', '/dashboard/researcher'],
-  DIGITIZATION_TECH: ['/', '/search', '/collections', '/dashboard/tech'],
-  CONSERVATION_ASSISTANT: ['/', '/search', '/collections', '/dashboard/conservation'],
-  METADATA_SPECIALIST: ['/', '/search', '/collections', '/dashboard/metadata'],
-  REFERENCE_ARCHIVIST: ['/', '/search', '/collections', '/dashboard/reference'],
-  PROCESSING_ARCHIVIST: ['/', '/search', '/collections', '/dashboard/processing'],
-  DEPARTMENT_HEAD: ['/', '/search', '/collections', '/dashboard/management'],
-  PRESERVATION_MANAGER: ['/', '/search', '/collections', '/dashboard/preservation'],
-  NATIONAL_ARCHIVIST: ['/', '/search', '/collections', '/dashboard/executive'],
-  SECURITY_OFFICER: ['/', '/search', '/collections', '/dashboard/security'],
-  SYSTEM_ADMIN: ['/'], // Admin has access to all, simplified in hasRouteAccess
-  OUTREACH_COORDINATOR: ['/'],
-  SUBJECT_SPECIALIST: ['/'],
+export function getDashboardUrl(roles: UserRole[]): string {
+  if (roles.includes(UserRole.SYSTEM_ADMIN)) return '/dashboard/admin'
+  if (roles.includes(UserRole.DIRECTOR)) return '/dashboard/executive'
+
+  // Generic mapping based on first relevant role
+  const dashboards: Partial<Record<UserRole, string>> = {
+    [UserRole.CHIEF_ARCHIVIST]: '/dashboard/processing',
+    [UserRole.CHIEF_CONSERVATOR]: '/dashboard/preservation',
+    [UserRole.HEAD_DIGITAL_ARCHIVES]: '/dashboard/tech',
+    [UserRole.HEAD_PUBLIC_SERVICES]: '/dashboard/reference',
+    [UserRole.AUDIOVISUAL_ARCHIVIST]: '/dashboard/specialist',
+    [UserRole.OUTREACH_OFFICER]: '/dashboard/outreach',
+    [UserRole.HR_MANAGER]: '/dashboard/management',
+    [UserRole.SECURITY_MANAGER]: '/dashboard/security',
+    [UserRole.REGISTERED_RESEARCHER]: '/dashboard/user',
+  }
+
+  for (const role of roles) {
+    if (dashboards[role]) return dashboards[role]
+  }
+
+  return '/'
 }
 
-export function hasRouteAccess(role: UserRole, path: string): boolean {
+export function hasRouteAccess(roles: UserRole[], path: string): boolean {
   // For development, allow all access
   return true
 }
 
 export function canAccessResource(
-  userRole: UserRole,
+  roles: UserRole[],
   resource: Resource,
   action: PermissionAction,
 ): boolean {
@@ -116,14 +175,6 @@ export function canAccessResource(
 export async function logAuditEvent(params: any) {
   console.log('Audit Event (Mock):', params)
 }
-
-export async function checkLoginAttempts(userId: string): Promise<boolean> {
-  return true
-}
-
-export async function incrementFailedLogin(userId: string): Promise<void> { }
-
-export async function resetFailedLogin(userId: string): Promise<void> { }
 
 export function getRoleTitle(role: UserRole): string {
   return role.toString()
