@@ -15,21 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Archivum Lumen - Digital Archive System",
+  title: "National Archives of Zimbabwe - Digital Archive System",
   description: "A modern, visually engaging public archive system with comprehensive preservation tools and intuitive navigation",
   keywords: ["archive", "digital preservation", "archival management", "historical documents", "collections"],
-  authors: [{ name: "Archivum Lumen Team" }],
+  authors: [{ name: "National Archives of Zimbabwe Team" }],
   icons: {
     icon: "/logo.svg",
   },
   openGraph: {
-    title: "Archivum Lumen",
+    title: "National Archives of Zimbabwe",
     description: "Modern digital archive system for preserving and exploring historical collections",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Archivum Lumen",
+    title: "National Archives of Zimbabwe",
     description: "Modern digital archive system",
   },
 };

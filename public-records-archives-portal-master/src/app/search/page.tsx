@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Filter, X, Calendar, MapPin, FileText, User, Clock, Download, Eye, Star, ChevronRight, FileCheck } from 'lucide-react'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -106,7 +108,7 @@ export default function SearchPage() {
         <div className="container mx-auto px-4 flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
             <div className="h-10 w-10 flex items-center justify-center">
-              <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+              <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
             </div>
             <div>
               <h1 className="font-bold text-lg leading-tight">Public Records & Archives Portal</h1>
@@ -141,7 +143,7 @@ export default function SearchPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-primary" />
                 <Input
                   type="search"
-                  placeholder="Search birth, death, marriage, property, court records, and historical archives..."
+                  placeholder="Search historical records, government gazettes, maps, or archives..."
                   className="h-16 pl-14 pr-14 text-lg rounded-full border-2"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -192,12 +194,15 @@ export default function SearchPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Departments</SelectItem>
-                        <SelectItem value="Vital Records">Vital Records</SelectItem>
-                        <SelectItem value="Court Administration">Court Administration</SelectItem>
+                        <SelectItem value="Historical Documents">Historical Documents</SelectItem>
+                        <SelectItem value="Audio & Visual Archives">Audio & Visual Archives</SelectItem>
+                        <SelectItem value="Government Publications">Government Publications</SelectItem>
+                        <SelectItem value="Genealogy & Family">Genealogy & Family</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
+              </div>
             </form>
           </motion.div>
         </div>
@@ -327,23 +332,7 @@ export default function SearchPage() {
         </section>
       )}
 
-      {/* Footer */}
-      <footer className="mt-auto border-t py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-            <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span>Archivum Lumen</span>
-          </Link>
-          <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-          <p className="mt-2 text-xs">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            {' • '}
-            <Link href="/accessibility" className="hover:text-primary transition-colors">Accessibility</Link>
-            {' • '}
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-          </p>
-        </div>
-      </footer>
+      <AnimatedFooter />
     </div>
   )
 }

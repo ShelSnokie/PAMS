@@ -41,6 +41,13 @@ export function AnimatedFooter() {
                 <p className="mt-1 text-[9px] uppercase tracking-[0.3em] font-bold opacity-40">
                     Official Records & Documentation Portal
                 </p>
+                <p className="mt-4 text-xs">
+                    <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                    {' • '}
+                    <Link href="/accessibility" className="hover:text-primary transition-colors">Accessibility</Link>
+                    {' • '}
+                    <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+                </p>
             </div>
         </footer>
     )

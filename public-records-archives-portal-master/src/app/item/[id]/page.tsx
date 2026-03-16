@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Shield, AlertTriangle, FileText, Calendar, MapPin, User, Download, ExternalLink, Lock, CheckCircle, Copy, X } from 'lucide-react'
+import { ArrowLeft, Shield, AlertTriangle, FileText, Calendar, MapPin, User, Download, ExternalLink, Eye, Lock, CheckCircle, Copy, X, FileCheck } from 'lucide-react'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -84,24 +86,19 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
   useEffect(() => {
     // Fetch record details
     async function fetchRecord() {
-      // Simulated fetch - replace with actual API call
-      setTimeout(() => {
-        setRecord({
-          id: params.id,
-          identifier: params.id,
-          title: 'Birth Certificate',
-          description: 'Official birth certificate issued by County Clerk\'s Office. Includes full name, date of birth, place of birth, parent information, and official seal.',
-          date: '1985-03-15',
-          location: 'Los Angeles County, California',
-          creator: 'County Clerk\'s Office',
-          format: 'document',
-          collection: 'Vital Records (VR-001)',
-          accessLevel: 'public',
-          viewCount: 1245,
-          hasDigitalCopy: true,
-        })
+      try {
+        const response = await fetch(`/api/records/${params.id}`)
+        if (response.ok) {
+          const data = await response.json()
+          setRecord(data)
+        } else {
+          setRecord(null)
+        }
+      } catch (error) {
+        setRecord(null)
+      } finally {
         setLoading(false)
-      }, 1000)
+      }
     }
 
     fetchRecord()
@@ -150,18 +147,37 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
 
   if (!record) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="max-w-md">
-          <CardContent className="p-8">
-            <p className="text-center text-muted-foreground">Record not found</p>
-            <Link href="/search">
-              <Button className="mt-4">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Search
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-md w-full"
+        >
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="text-center pb-2">
+              <div className="mx-auto rounded-full bg-muted/50 w-20 h-20 flex items-center justify-center mb-4">
+                <FileText className="h-10 w-10 text-muted-foreground opacity-50" />
+              </div>
+              <CardTitle className="text-2xl font-bold">Record Not Available</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-4 pt-4">
+              <p className="text-muted-foreground">
+                This record has not been uploaded or digitized yet. The physical record may still be undergoing processing, or it could be scheduled for future digitization by the National Archives of Zimbabwe.
+              </p>
+              <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
+                <p className="text-sm font-medium text-primary mb-1">Need this record urgently?</p>
+                <p className="text-xs text-muted-foreground">You can contact the reading room to inquire about manual retrieval.</p>
+              </div>
+              <Link href="/search" className="inline-block mt-4 w-full">
+                <Button className="w-full gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Return to Search
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     )
   }
@@ -200,7 +216,7 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
             <div className="h-8 w-px bg-border hidden md:block" />
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
               <div className="h-10 w-10 flex items-center justify-center">
-                <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div className="hidden sm:block">
                 <h1 className="font-bold text-sm leading-tight">Public Records & Archives Portal</h1>
@@ -479,23 +495,7 @@ export default function RecordDetailPage({ params }: { params: { id: string } })
         </DialogContent>
       </Dialog>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t py-8 mt-auto">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-            <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span>Archivum Lumen</span>
-          </Link>
-          <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-          <p className="mt-2 text-xs">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            {' • '}
-            <Link href="/accessibility" className="hover:text-primary transition-colors">Accessibility</Link>
-            {' • '}
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-          </p>
-        </div>
-      </footer>
+      <AnimatedFooter />
     </div>
   )
 }

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Clock, Phone, Mail, ExternalLink, FileCheck, ArrowLeft, Calendar, User, CreditCard, CheckCircle2 } from 'lucide-react'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -54,7 +56,7 @@ export default function VisitOfficePage() {
                 <div className="container mx-auto px-4 flex h-16 items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
                         <div className="h-10 w-10 flex items-center justify-center">
-                            <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                            <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
                         </div>
                         <div>
                             <h1 className="font-bold text-lg leading-tight">Public Records & Archives Portal</h1>
@@ -403,18 +405,7 @@ export default function VisitOfficePage() {
                 </section>
             </main>
 
-            <footer className="mt-auto border-t py-12">
-                <div className="container mx-auto px-4 text-center">
-                    <Link href="/" className="inline-flex items-center gap-2 mb-6 group">
-                        <FileCheck className="h-10 w-10 text-primary group-hover:scale-110 transition-transform" />
-                        <span className="text-xl font-bold">Archivum Lumen</span>
-                    </Link>
-                    <div className="text-sm text-muted-foreground space-y-2 text-center flex flex-col items-center">
-                        <p>© {new Date().getFullYear()} National Archives of Zimbabwe. All rights reserved.</p>
-                        <p>Gun Hill Headquarters | Harare</p>
-                    </div>
-                </div>
-            </footer>
+            <AnimatedFooter />
         </div>
     )
 }

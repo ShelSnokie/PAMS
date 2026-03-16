@@ -35,10 +35,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
-import { useRouter } from 'next/navigation'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { cn } from '@/lib/utils'
 
 export default function UserDashboard() {
     const [userName] = useState('John Researcher')
@@ -85,11 +88,12 @@ export default function UserDashboard() {
                     </Link>
 
                     <div className="flex items-center gap-4">
+                        <ReportGenerator staffName={userName} department="External Researchers" role="Registered Member" />
+                        <ThemeToggle />
                         <div className="text-right hidden sm:block">
                             <p className="text-sm font-medium">{userName}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Researcher</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Public User</p>
                         </div>
-                        <ThemeToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
@@ -150,49 +154,67 @@ export default function UserDashboard() {
                     </CardContent>
                 </Card>
 
-                {/* Quick Stats */}
-                <div className="grid gap-6 md:grid-cols-3 mb-8">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                <CardTitle className="text-sm font-medium">Saved Records</CardTitle>
-                                <Bookmark className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{savedRecords.length}</div>
-                                <p className="text-xs text-muted-foreground">2 ready for download</p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                {/* Compact Researcher Metrics */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+                    <div className="flex items-center justify-between p-3 border rounded bg-muted/10">
+                        <div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Saved Records</div>
+                            <div className="text-sm font-black">{savedRecords.length}</div>
+                        </div>
+                        <Bookmark className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded bg-muted/10">
+                        <div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Recent Searches</div>
+                            <div className="text-sm font-black">{recentSearches.length}</div>
+                        </div>
+                        <Search className="h-4 w-4 text-primary" />
+                    </div>
+                    <div
+                        className="flex items-center justify-between p-3 border rounded bg-muted/10 cursor-pointer hover:bg-muted/20 transition-colors"
+                        onClick={() => setShowVisitsDialog(true)}
+                    >
+                        <div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Upcoming Visits</div>
+                            <div className="text-sm font-black">{upcomingBookings.length}</div>
+                        </div>
+                        <Calendar className="h-4 w-4 text-primary" />
+                    </div>
+                </div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                <CardTitle className="text-sm font-medium">Recent Searches</CardTitle>
-                                <Search className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{recentSearches.length}</div>
-                                <p className="text-xs text-muted-foreground">This week</p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                        <Card
-                            className="cursor-pointer hover:border-primary/50 transition-colors"
-                            onClick={() => setShowVisitsDialog(true)}
-                        >
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                <CardTitle className="text-sm font-medium">Upcoming Visits</CardTitle>
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{upcomingBookings.length}</div>
-                                <p className="text-xs text-muted-foreground">Click to view & add</p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                {/* Compact Actions Grid */}
+                <div className="mb-8">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Research Tools</h2>
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                        <DashboardCard
+                            title="Start Research"
+                            description="Explore the national archives"
+                            icon={Search}
+                            color="text-primary"
+                            href="/search"
+                        />
+                        <DashboardCard
+                            title="Request Records"
+                            description="Order certified copies"
+                            icon={FileText}
+                            color="text-primary"
+                            href="/certified-copy-requests"
+                        />
+                        <DashboardCard
+                            title="Saved Items"
+                            description="View your bookmarked records"
+                            icon={Bookmark}
+                            color="text-primary"
+                            href="/profile#saved"
+                        />
+                        <DashboardCard
+                            title="Book Visit"
+                            description="Schedule reading room time"
+                            icon={Plus}
+                            color="text-primary"
+                            href="/visit"
+                        />
+                    </div>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">

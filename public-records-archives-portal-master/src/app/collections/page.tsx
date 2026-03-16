@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FolderOpen, Search, Filter, ChevronRight, Grid, List, Star, Share2, Users, Clock, Calendar, MapPin, FileText, FileCheck } from 'lucide-react'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -197,7 +199,7 @@ export default function CollectionsPage() {
         <div className="container mx-auto px-4 flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
             <div className="h-10 w-10 flex items-center justify-center">
-              <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+              <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
             </div>
             <div>
               <h1 className="font-bold text-lg leading-tight">Public Records & Archives Portal</h1>
@@ -474,23 +476,7 @@ export default function CollectionsPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold text-primary mb-4 hover:opacity-80 transition-opacity group">
-            <FileCheck className="h-8 w-8 group-hover:scale-110 transition-transform" />
-            <span>Archivum Lumen</span>
-          </Link>
-          <p>© {new Date().getFullYear()} Archivum Lumen. All rights reserved.</p>
-          <p className="mt-2 text-xs">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            {' • '}
-            <Link href="/accessibility" className="hover:text-primary transition-colors">Accessibility</Link>
-            {' • '}
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-          </p>
-        </div>
-      </footer>
+      <AnimatedFooter />
     </div>
   )
 }

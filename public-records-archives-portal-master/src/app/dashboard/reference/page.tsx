@@ -27,10 +27,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { useRouter } from 'next/navigation'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { cn } from '@/lib/utils'
 
 interface ResearchRequest {
   id: string
@@ -189,10 +198,11 @@ export default function ReferenceArchivistDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ReportGenerator staffName="Jane Smith" department="Reference Services" role="Reference Archivist" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Jane Smith</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Reference Services</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Specialist</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -220,68 +230,35 @@ export default function ReferenceArchivistDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.label}
-                  </CardTitle>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-end justify-between">
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-xs text-muted-foreground">{stat.change}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+        {/* Compact Reference Metrics */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                <div className="text-sm font-black">{stat.value}</div>
+              </div>
+              <stat.icon className={cn("h-4 w-4", stat.color)} />
+            </div>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8"
-        >
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action, index) => (
-              <motion.div
+        {/* Compact Reference Actions Grid */}
+        <div className="mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Research & Public Services Console</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {quickActions.map((action) => (
+              <DashboardCard
                 key={action.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Link href={action.href}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className={`h-10 w-10 rounded-lg ${action.color} flex items-center justify-center`}>
-                        <action.icon className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="font-medium">{action.title}</div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
+                title={action.title}
+                description="Reference queue management"
+                icon={action.icon}
+                color="text-primary"
+                href={action.href}
+              />
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Main Content */}
         <Tabs defaultValue="requests" className="space-y-6">
@@ -305,74 +282,82 @@ export default function ReferenceArchivistDashboard() {
           </TabsList>
 
           <TabsContent value="requests" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Research Requests Queue</h2>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filters
-                </Button>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Request
-                </Button>
-              </div>
-            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="research-requests" className="border-none">
+                <div className="flex items-center justify-between mb-4">
+                  <AccordionTrigger className="hover:no-underline py-0">
+                    <h2 className="text-xl font-semibold">Research Requests Queue</h2>
+                  </AccordionTrigger>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filters
+                    </Button>
+                    <Button size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Request
+                    </Button>
+                  </div>
+                </div>
 
-            <div className="space-y-3">
-              {requests.map((request, index) => (
-                <motion.div
-                  key={request.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {request.requestNumber}
-                            </span>
-                            <Badge className={getStatusColor(request.status)}>
-                              {request.status.replace(/_/g, ' ')}
-                            </Badge>
-                            <Badge className={getPriorityColor(request.priority)}>
-                              {request.priority}
-                            </Badge>
-                          </div>
-                          <h3 className="font-semibold">{request.title}</h3>
-                        </div>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div className="text-sm text-muted-foreground space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          <span>{request.researcherName}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          <span>{request.researcherEmail}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>Submitted: {formatDate(request.submittedAt)}</span>
-                        </div>
-                        {request.dueDate && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span>Due: {formatDate(request.dueDate)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                <AccordionContent>
+                  <div className="space-y-3 pt-2">
+                    {requests.map((request, index) => (
+                      <motion.div
+                        key={request.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-sm font-medium text-muted-foreground">
+                                    {request.requestNumber}
+                                  </span>
+                                  <Badge className={getStatusColor(request.status)}>
+                                    {request.status.replace(/_/g, ' ')}
+                                  </Badge>
+                                  <Badge className={getPriorityColor(request.priority)}>
+                                    {request.priority}
+                                  </Badge>
+                                </div>
+                                <h3 className="font-semibold">{request.title}</h3>
+                              </div>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="text-sm text-muted-foreground space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                <span>{request.researcherName}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                <span>{request.researcherEmail}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                <span>Submitted: {formatDate(request.submittedAt)}</span>
+                              </div>
+                              {request.dueDate && (
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-4 w-4" />
+                                  <span>Due: {formatDate(request.dueDate)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </TabsContent>
 
           <TabsContent value="reproductions">

@@ -9,6 +9,9 @@ import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { cn } from '@/lib/utils'
 
 export default function RegionalDashboard() {
     const router = useRouter()
@@ -46,6 +49,7 @@ export default function RegionalDashboard() {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <ReportGenerator staffName="Regional Officer" department="Regional Operations" role="Provincial Manager" />
                         <ThemeToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -74,17 +78,49 @@ export default function RegionalDashboard() {
                     </p>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="mb-8">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Regional Management Console</h2>
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                        <DashboardCard
+                            title="New Transfer"
+                            description="Process regional record transfer"
+                            icon={FileText}
+                            color="text-primary"
+                            href="/regional/transfers/new"
+                        />
+                        <DashboardCard
+                            title="Local Agencies"
+                            description="Manage provincial departments"
+                            icon={Building}
+                            color="text-primary"
+                            href="/regional/agencies"
+                        />
+                        <DashboardCard
+                            title="Site Inspection"
+                            description="Schedule regional audit"
+                            icon={Clock}
+                            color="text-primary"
+                            href="/regional/inspections"
+                        />
+                        <DashboardCard
+                            title="Staff Directory"
+                            description="Provincial personnel list"
+                            icon={Users}
+                            color="text-primary"
+                            href="/regional/staff"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
                     {stats.map((stat) => (
-                        <Card key={stat.label}>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
-                                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stat.value}</div>
-                            </CardContent>
-                        </Card>
+                        <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
+                            <div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                                <div className="text-sm font-black">{stat.value}</div>
+                            </div>
+                            <stat.icon className={cn("h-4 w-4", stat.color)} />
+                        </div>
                     ))}
                 </div>
 

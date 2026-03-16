@@ -30,10 +30,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
-import { useRouter } from 'next/navigation'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { cn } from '@/lib/utils'
 
 interface TreatmentLog {
   id: string
@@ -230,10 +239,11 @@ export default function ConservationAssistantDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ReportGenerator staffName="Sarah Williams" department="Conservation Unit" role="Conservation Assistant" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Sarah Williams</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Conservation Unit</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Senior Conservator</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -261,68 +271,36 @@ export default function ConservationAssistantDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.label}
-                  </CardTitle>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-end justify-between">
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-xs text-muted-foreground">{stat.change}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8"
-        >
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action, index) => (
-              <motion.div
+        {/* Compact Conservation Actions Grid */}
+        <div className="mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Conservation Workflow Console</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {quickActions.map((action) => (
+              <DashboardCard
                 key={action.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Link href={action.href}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className={`h-10 w-10 rounded-lg ${action.color} flex items-center justify-center`}>
-                        <action.icon className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="font-medium">{action.title}</div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
+                title={action.title}
+                description="Preservation task management"
+                icon={action.icon}
+                color="text-primary"
+                href={action.href}
+              />
             ))}
           </div>
-        </motion.div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                <div className="text-sm font-black">{stat.value}</div>
+              </div>
+              <stat.icon className={cn("h-4 w-4", stat.color)} />
+            </div>
+          ))}
+        </div>
+
+        {/* Removed redundant quick actions */}
 
         {/* Environmental Monitoring */}
         <motion.div
@@ -417,88 +395,96 @@ export default function ConservationAssistantDashboard() {
           </TabsList>
 
           <TabsContent value="treatments" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Treatment Logs</h2>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Search className="mr-2 h-4 w-4" />
-                  Search Logs
-                </Button>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Treatment
-                </Button>
-              </div>
-            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="treatment-logs" className="border-none">
+                <div className="flex items-center justify-between mb-4">
+                  <AccordionTrigger className="hover:no-underline py-0">
+                    <h2 className="text-xl font-semibold">Treatment Logs</h2>
+                  </AccordionTrigger>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Search className="mr-2 h-4 w-4" />
+                      Search Logs
+                    </Button>
+                    <Button size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Treatment
+                    </Button>
+                  </div>
+                </div>
 
-            <div className="space-y-3">
-              {treatments.map((treatment, index) => (
-                <motion.div
-                  key={treatment.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between gap-4 mb-4">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {treatment.logNumber}
-                            </span>
-                            <Badge className={getStatusColor(treatment.status)}>
-                              {treatment.status.replace(/_/g, ' ')}
-                            </Badge>
-                            <Badge className={getPriorityColor(treatment.priority)}>
-                              {treatment.priority}
-                            </Badge>
-                          </div>
-                          <h3 className="font-semibold">{treatment.title}</h3>
-                          <div className="text-sm text-muted-foreground">
-                            Material: {treatment.materialType}
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </div>
+                <AccordionContent>
+                  <div className="space-y-3 pt-2">
+                    {treatments.map((treatment, index) => (
+                      <motion.div
+                        key={treatment.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between gap-4 mb-4">
+                              <div className="flex-1 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-muted-foreground">
+                                    {treatment.logNumber}
+                                  </span>
+                                  <Badge className={getStatusColor(treatment.status)}>
+                                    {treatment.status.replace(/_/g, ' ')}
+                                  </Badge>
+                                  <Badge className={getPriorityColor(treatment.priority)}>
+                                    {treatment.priority}
+                                  </Badge>
+                                </div>
+                                <h3 className="font-semibold">{treatment.title}</h3>
+                                <div className="text-sm text-muted-foreground">
+                                  Material: {treatment.materialType}
+                                </div>
+                              </div>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </div>
 
-                      <div className="grid gap-4 md:grid-cols-4">
-                        <div className="space-y-1">
-                          <div className="text-sm text-muted-foreground">Condition Grade</div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={getConditionGrade(treatment.conditionGrade).color}>
-                              {getConditionGrade(treatment.conditionGrade).label}
-                            </Badge>
-                            {treatment.previousGrade && (
-                              <span className="text-sm text-muted-foreground">
-                                (was {getConditionGrade(treatment.previousGrade).label})
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                            <div className="grid gap-4 md:grid-cols-4">
+                              <div className="space-y-1">
+                                <div className="text-sm text-muted-foreground">Condition Grade</div>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={getConditionGrade(treatment.conditionGrade).color}>
+                                    {getConditionGrade(treatment.conditionGrade).label}
+                                  </Badge>
+                                  {treatment.previousGrade && (
+                                    <span className="text-sm text-muted-foreground">
+                                      (was {getConditionGrade(treatment.previousGrade).label})
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
 
-                        <div className="space-y-1">
-                          <div className="text-sm text-muted-foreground">Treatment Type</div>
-                          <div className="text-sm font-medium">{treatment.treatmentType}</div>
-                        </div>
+                              <div className="space-y-1">
+                                <div className="text-sm text-muted-foreground">Treatment Type</div>
+                                <div className="text-sm font-medium">{treatment.treatmentType}</div>
+                              </div>
 
-                        <div className="space-y-1">
-                          <div className="text-sm text-muted-foreground">Assigned To</div>
-                          <div className="text-sm font-medium">{treatment.performedBy}</div>
-                        </div>
+                              <div className="space-y-1">
+                                <div className="text-sm text-muted-foreground">Assigned To</div>
+                                <div className="text-sm font-medium">{treatment.performedBy}</div>
+                              </div>
 
-                        <div className="space-y-1">
-                          <div className="text-sm text-muted-foreground">Due Date</div>
-                          <div className="text-sm font-medium">{formatDate(treatment.dueDate)}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                              <div className="space-y-1">
+                                <div className="text-sm text-muted-foreground">Due Date</div>
+                                <div className="text-sm font-medium">{formatDate(treatment.dueDate)}</div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </TabsContent>
 
           <TabsContent value="condition">

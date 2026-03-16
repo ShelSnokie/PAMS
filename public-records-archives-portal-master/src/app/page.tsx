@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Search, FileText, Calendar, Users, Building2, Shield, LogOut, User, Home, Scale, FileCheck, Landmark, MapPin, Clock, ExternalLink } from 'lucide-react'
+import { FolderOpen, Search, Filter, ChevronRight, BarChart3, Database, Lock, Clock, FileCheck, CheckCircle, User, Shield, FileText, Building2, Calendar, Users, MapPin } from 'lucide-react'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,31 +30,31 @@ import { Label } from '@/components/ui/label'
 const featuredCollections = [
   {
     id: '1',
-    title: 'Vital Records',
-    description: 'Birth, death, marriage, and divorce certificates available for public request',
-    itemCount: 15450000,
-    identifier: 'VR-001',
+    title: 'Historical Documents',
+    description: 'Pre-independence archives, treaties, and colonial-era administrative records',
+    itemCount: 4500000,
+    identifier: 'HD-001',
   },
   {
     id: '2',
-    title: 'Property Records',
-    description: 'Deeds, mortgages, property transfers, and land ownership documents',
+    title: 'Genealogy & Family',
+    description: 'Census data, immigration records, and historical vital registrations',
     itemCount: 8450000,
-    identifier: 'PR-002',
+    identifier: 'GF-002',
   },
   {
     id: '3',
-    title: 'Court Records',
-    description: 'Civil and criminal case filings, judgments, and court proceedings',
+    title: 'Government Publications',
+    description: 'Government Gazettes, parliamentary debates, and official state reports',
     itemCount: 3240000,
-    identifier: 'CR-003',
+    identifier: 'GP-003',
   },
   {
     id: '4',
-    title: 'Business Licenses',
-    description: 'Business registrations, permits, and licensing documentation',
+    title: 'Photo & Audio Archives',
+    description: 'Historical photographs, maps, and oral history interview recordings',
     itemCount: 1250000,
-    identifier: 'BL-004',
+    identifier: 'PA-004',
   },
 ]
 
@@ -67,7 +68,7 @@ export default function PublicRecordsHome() {
         <div className="container mx-auto px-4 flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
             <div className="h-10 w-10 flex items-center justify-center">
-              <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+              <AnimatedLogo className="h-8 w-8 text-primary" />
             </div>
             <div>
               <h1 className="font-bold text-lg leading-tight">Public Records & Archives Portal</h1>
@@ -81,6 +82,9 @@ export default function PublicRecordsHome() {
             </Link>
             <Link href="/services" className="text-sm font-medium hover:text-primary transition-colors">
               Services
+            </Link>
+            <Link href="/facts" className="text-sm font-medium hover:text-primary transition-colors">
+              Facts
             </Link>
             <Link href="/help" className="text-sm font-medium hover:text-primary transition-colors">
               Help Center
@@ -179,8 +183,8 @@ export default function PublicRecordsHome() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="mb-8 text-lg text-muted-foreground sm:text-xl"
             >
-              Search and request vital records, property documents, court filings, and historical archives.
-              Fast, secure, and convenient access to official public records and archives.
+              Our mission is to digitize and democratize access to Zimbabwe's public records and historical archives for all citizens.
+              Fast, secure, and convenient access to the nation's history.
             </motion.p>
 
             <motion.div
@@ -194,7 +198,7 @@ export default function PublicRecordsHome() {
                   <Search className="absolute left-4 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="search"
-                    placeholder="Search for birth, death, marriage, property, court records..."
+                    placeholder="Search for historical archives, government gazettes, maps, or records..."
                     className="h-14 pl-12 pr-24 text-lg rounded-full border-2"
                     readOnly
                   />
@@ -324,10 +328,10 @@ export default function PublicRecordsHome() {
           </h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { title: 'Birth Certificates', icon: FileCheck, count: '8.5M', href: '/search?type=birth' },
-              { title: 'Death Certificates', icon: FileText, count: '6.2M', href: '/search?type=death' },
-              { title: 'Marriage Licenses', icon: Users, count: '5.8M', href: '/search?type=marriage' },
-              { title: 'Property Deeds', icon: Home, count: '4.2M', href: '/search?type=property' },
+              { title: 'Historical Maps', icon: MapPin, count: '14.5K', href: '/search?type=maps' },
+              { title: 'Government Gazettes', icon: FileText, count: '46.2K', href: '/search?type=gazettes' },
+              { title: 'Parliamentary Debates', icon: Users, count: '85.8K', href: '/search?type=parliament' },
+              { title: 'Photographic Archive', icon: FileCheck, count: '214.2K', href: '/search?type=photos' },
             ].map((item, index) => (
               <motion.div
                 key={item.title}

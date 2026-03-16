@@ -50,6 +50,8 @@ import Link from 'next/link'
 import UserManagement from '@/components/admin/UserManagement'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
 
 interface SystemStat {
   label: string
@@ -141,10 +143,11 @@ export default function SystemAdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ReportGenerator staffName="Admin User" department="IT & Systems" role="Admin" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Admin User</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">System Administration</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Administrator</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -171,384 +174,169 @@ export default function SystemAdminDashboard() {
 
       <main className="container mx-auto px-4 py-8">
 
-        {/* Interactive Overview Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-          {/* Security Alerts Interactive Card */}
-          <Dialog open={showSecurityDialog} onOpenChange={setShowSecurityDialog}>
-            <DialogTrigger asChild>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.02 }}
-                className="cursor-pointer"
-              >
-                <Card className="h-full border-l-4 border-l-red-500 hover:shadow-lg transition-all">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                    <CardTitle className="text-sm font-medium">Security Status</CardTitle>
-                    <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold flex items-center gap-2">
-                      {criticalAlertsCount > 0 ? 'Critical Attention' : 'Monitor Active'}
-                      {criticalAlertsCount > 0 && <span className="flex h-3 w-3 rounded-full bg-red-500 animate-pulse" />}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {criticalAlertsCount} critical, {warningAlertsCount} warning alerts
-                    </p>
-                    <div className="mt-4 flex items-center text-sm text-primary font-medium">
-                      View Details <ChevronRight className="ml-1 h-4 w-4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5 text-red-600" />
-                  Security Alerts & Incidents
-                </DialogTitle>
-                <DialogDescription>Real-time security monitoring feed</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 mt-4">
-                {securityAlerts.map((alert) => (
-                  <Card key={alert.id} className={`border-l-4 ${alert.type === 'critical' ? 'border-red-500' :
-                    alert.type === 'warning' ? 'border-amber-500' :
-                      'border-blue-500'
-                    }`}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          {getAlertIcon(alert.type)}
-                          <div>
-                            <CardTitle className="text-base">{alert.title}</CardTitle>
-                            <CardDescription className="text-xs">{alert.time}</CardDescription>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm">{alert.description}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* System Stats Interactive Card */}
-          <Dialog open={showSystemDialog} onOpenChange={setShowSystemDialog}>
-            <DialogTrigger asChild>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                className="cursor-pointer"
-              >
-                <Card className="h-full border-l-4 border-l-green-500 hover:shadow-lg transition-all">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                    <CardTitle className="text-sm font-medium">System Health</CardTitle>
-                    <Activity className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{systemHealthStatus}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      All services operational
-                    </p>
-                    <div className="mt-4 flex items-center text-sm text-primary font-medium">
-                      View Metrics <ChevronRight className="ml-1 h-4 w-4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Server className="h-5 w-5 text-primary" />
-                  System Statistics
-                </DialogTitle>
-                <DialogDescription>Detailed performance metrics</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-4">
-                {systemStats.map((stat) => (
-                  <Card key={stat.label}>
-                    <CardHeader className="flex flex-row items-center justify-between pb-3">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        {stat.label}
-                      </CardTitle>
-                      <stat.icon className="h-6 w-6 text-primary" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="text-2xl font-bold">{stat.value}</div>
-                        {getStatusBadge(stat.status)}
-                      </div>
-                      {stat.trend && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <TrendingUp className="h-3 w-3" />
-                          {stat.trend}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* Quick Actions / User Card - Placeholder for balance */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <Card className="h-full border-l-4 border-l-blue-500 hover:shadow-lg transition-all">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">245</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  +12 active this hour
-                </p>
-                <div className="mt-4 flex items-center text-sm text-primary font-medium">
-                  Manage Users <ChevronRight className="ml-1 h-4 w-4" />
+        {/* Compact Admin Actions Grid */}
+        <div className="mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">System Management Console</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {/* User Management */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <div>
+                  <DashboardCard
+                    title="User Management"
+                    description="Administer access and accounts"
+                    icon={Users}
+                    color="text-blue-600"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[85vw] sm:max-w-4xl overflow-y-auto">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    User Management
+                  </SheetTitle>
+                  <SheetDescription>Manage system access and update user details.</SheetDescription>
+                </SheetHeader>
+                <UserManagement />
+              </SheetContent>
+            </Sheet>
+
+            {/* Role Permissions */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <div>
+                  <DashboardCard
+                    title="Role Permissions"
+                    description="Configure access control matrix"
+                    icon={ShieldAlert}
+                    color="text-amber-600"
+                  />
+                </div>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[85vw] sm:max-w-3xl overflow-y-auto">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="flex items-center gap-2">
+                    <ShieldAlert className="h-5 w-5" />
+                    Role Permissions
+                  </SheetTitle>
+                  <SheetDescription>Configure granular role-based permissions.</SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Role Configuration</h3>
+                    <Button><ShieldAlert className="mr-2 h-4 w-4" /> Add Role</Button>
+                  </div>
+                  <Card><CardContent className="p-12 text-center text-muted-foreground">Permission matrix viewer placeholder</CardContent></Card>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* System Settings */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <div>
+                  <DashboardCard
+                    title="System Settings"
+                    description="Global portal configuration"
+                    icon={Server}
+                    color="text-primary"
+                  />
+                </div>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[85vw] sm:max-w-2xl overflow-y-auto">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Server className="h-5 w-5" />
+                    System Settings
+                  </SheetTitle>
+                  <SheetDescription>Manage global configurations.</SheetDescription>
+                </SheetHeader>
+                <Card><CardContent className="p-12 text-center text-muted-foreground">Settings configuration placeholder</CardContent></Card>
+              </SheetContent>
+            </Sheet>
+
+            {/* Audit Logs */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <div>
+                  <DashboardCard
+                    title="Security Audit"
+                    description="Review system activity trails"
+                    icon={Activity}
+                    color="text-purple-600"
+                  />
+                </div>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[85vw] sm:max-w-5xl overflow-y-auto">
+                <SheetHeader className="mb-6">
+                  <SheetTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Audit Logs
+                  </SheetTitle>
+                  <SheetDescription>Review detailed system logs.</SheetDescription>
+                </SheetHeader>
+                <Card><CardContent className="p-12 text-center text-muted-foreground">Audit log viewer placeholder</CardContent></Card>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
 
-
-        {/* Main Content - Navigation Menu */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-
-          {/* User Management Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">User Management</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">Manage</div>
-                  <p className="text-xs text-muted-foreground">Add, edit, or remove users</p>
-                </CardContent>
-              </Card>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[85vw] sm:max-w-4xl overflow-y-auto">
-              <SheetHeader className="mb-6">
-                <SheetTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  User Management
-                </SheetTitle>
-                <SheetDescription>
-                  Manage system access, create new accounts, and update user details.
-                </SheetDescription>
-              </SheetHeader>
-              <UserManagement />
-            </SheetContent>
-          </Sheet>
-
-          {/* Role Permissions Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Role Permissions</CardTitle>
-                  <ShieldAlert className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">Configure</div>
-                  <p className="text-xs text-muted-foreground">Access control & policies</p>
-                </CardContent>
-              </Card>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[85vw] sm:max-w-3xl overflow-y-auto">
-              <SheetHeader className="mb-6">
-                <SheetTitle className="flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5" />
-                  Role Permissions
-                </SheetTitle>
-                <SheetDescription>
-                  Configure granular access controls and role-based permissions.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="grid gap-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Role Configuration</h3>
-                  <Button>
-                    <ShieldAlert className="mr-2 h-4 w-4" />
-                    Add New Role
-                  </Button>
-                </div>
-
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <ShieldAlert className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Role & Permission Matrix</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Define and manage roles with granular permissions
-                    </p>
-                    <div className="flex gap-3 justify-center">
-                      <Button variant="outline">Edit Permissions</Button>
-                      <Button>View Matrix</Button>
+        {/* System Health Overview (Compact) */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="border-muted/40 overflow-hidden">
+            <CardHeader className="py-3 bg-muted/20">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Security Overwatch
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-muted/40">
+                {securityAlerts.map((alert) => (
+                  <div key={alert.id} className="p-3 hover:bg-muted/5 transition-colors">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "h-7 w-7 rounded-full flex items-center justify-center",
+                          alert.type === 'critical' ? 'bg-red-100' : 'bg-amber-100'
+                        )}>
+                          {getAlertIcon(alert.type)}
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold">{alert.title}</div>
+                          <div className="text-[10px] text-muted-foreground">{alert.time} • {alert.description}</div>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-7 text-[10px]">Acknowledge</Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          {/* System Settings Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">System Settings</CardTitle>
-                  <Server className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">Settings</div>
-                  <p className="text-xs text-muted-foreground">Global configuration</p>
-                </CardContent>
-              </Card>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[85vw] sm:max-w-2xl overflow-y-auto">
-              <SheetHeader className="mb-6">
-                <SheetTitle className="flex items-center gap-2">
-                  <Server className="h-5 w-5" />
-                  System Settings
-                </SheetTitle>
-                <SheetDescription>
-                  Manage global system configurations and parameters.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="space-y-6">
-                <div className="flex items-center justify-end">
-                  <Button>
-                    <Server className="mr-2 h-4 w-4" />
-                    Save Configuration
-                  </Button>
-                </div>
-                <div className="grid gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Database Configuration</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div>
-                        <label className="text-sm font-medium">Connection Pool Size</label>
-                        <select className="w-full rounded-md border bg-background px-3 py-2">
-                          <option>10 connections</option>
-                          <option>20 connections</option>
-                          <option>50 connections</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium">Query Timeout</label>
-                        <select className="w-full rounded-md border bg-background px-3 py-2">
-                          <option>30 seconds</option>
-                          <option>60 seconds</option>
-                          <option>120 seconds</option>
-                        </select>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Security Configuration</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <label className="text-sm font-medium">MFA Required</label>
-                          <p className="text-xs text-muted-foreground">For staff accounts</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className="bg-green-100 text-green-800">Enabled</Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <label className="text-sm font-medium">Session Timeout</label>
-                          <p className="text-xs text-muted-foreground">Staff sessions</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge>2 hours</Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <label className="text-sm font-medium">Max Login Attempts</label>
-                          <p className="text-xs text-muted-foreground">Before lockout</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge>5 attempts</Badge>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          {/* Audit Logs Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Card className="cursor-pointer hover:shadow-md transition-all hover:bg-accent/50 group">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Audit Logs</CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">Logs</div>
-                  <p className="text-xs text-muted-foreground">Track system activity</p>
-                </CardContent>
-              </Card>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[85vw] sm:max-w-5xl overflow-y-auto">
-              <SheetHeader className="mb-6">
-                <SheetTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Audit Logs
-                </SheetTitle>
-                <SheetDescription>
-                  Review detailed system logs and user activity trails.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="flex items-center justify-end mb-4 gap-2">
-                <Button variant="outline">
-                  <Activity className="mr-2 h-4 w-4" />
-                  Export Logs
-                </Button>
-                <Button variant="outline">
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh
-                </Button>
-              </div>
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <Activity className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Audit Log Viewer</h3>
-                  <p className="text-muted-foreground mb-4">
-                    View and analyze system audit trails
-                  </p>
-                  <div className="flex gap-3 justify-center">
-                    <Button variant="outline">View Recent</Button>
-                    <Button variant="outline">Filter by User</Button>
-                    <Button>Advanced Search</Button>
                   </div>
-                </CardContent>
-              </Card>
-            </SheetContent>
-          </Sheet>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-muted/40 overflow-hidden">
+            <CardHeader className="py-3 bg-muted/20">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Kernel Metrics
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3">
+              <div className="grid grid-cols-2 gap-3">
+                {systemStats.slice(0, 4).map((stat) => (
+                  <div key={stat.label} className="flex items-center justify-between p-2 border rounded bg-muted/10">
+                    <div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                      <div className="text-sm font-black">{stat.value}</div>
+                    </div>
+                    {getStatusBadge(stat.status)}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
 

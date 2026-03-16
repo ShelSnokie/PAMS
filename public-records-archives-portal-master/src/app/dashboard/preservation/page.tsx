@@ -40,10 +40,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import Link from 'next/link'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { cn } from '@/lib/utils'
 
 interface PreservationTask {
   id: string
@@ -275,10 +282,11 @@ export default function PreservationManagerDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ReportGenerator staffName="Dr. Emily Chen" department="Preservation Unit" role="Manager" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Dr. Emily Chen</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Preservation Unit</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Unit Head</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -306,37 +314,34 @@ export default function PreservationManagerDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.label}
-                  </CardTitle>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-end justify-between">
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-xs text-muted-foreground">{stat.change}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+        {/* Compact Preservation Actions Grid */}
+        <div className="mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Preservation Operations Console</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {quickActions.map((action) => (
+              <DashboardCard
+                key={action.title}
+                title={action.title}
+                description="Manage preservation module"
+                icon={action.icon}
+                color="text-primary"
+                href={action.href}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                <div className="text-sm font-black">{stat.value}</div>
+              </div>
+              <stat.icon className={cn("h-4 w-4", stat.color)} />
+            </div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Storage Status */}
         <motion.div
@@ -389,36 +394,7 @@ export default function PreservationManagerDashboard() {
           </Card>
         </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mb-8"
-        >
-          <h2 className="text-xl font-semibold mb-4">Preservation Actions</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={action.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Link href={action.href}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className={`h-10 w-10 rounded-lg ${action.color} flex items-center justify-center`}>
-                        <action.icon className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="font-medium">{action.title}</div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {/* Removed redundant quick actions */}
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="tasks" className="space-y-6">
@@ -442,96 +418,104 @@ export default function PreservationManagerDashboard() {
           </TabsList>
 
           <TabsContent value="tasks" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">Active Preservation Tasks</h2>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filters
-                </Button>
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Task
-                </Button>
-              </div>
-            </div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="active-tasks" className="border-none">
+                <div className="flex items-center justify-between mb-4">
+                  <AccordionTrigger className="hover:no-underline py-0">
+                    <h2 className="text-xl font-semibold">Active Preservation Tasks</h2>
+                  </AccordionTrigger>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filters
+                    </Button>
+                    <Button size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Task
+                    </Button>
+                  </div>
+                </div>
 
-            <div className="space-y-3">
-              {tasks.map((task, index) => (
-                <motion.div
-                  key={task.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                >
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4 gap-4">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {task.id}
-                            </span>
-                            <Badge className={getTaskStatusColor(task.status)}>
-                              {task.status.replace(/_/g, ' ')}
-                            </Badge>
-                            <Badge className={getPriorityColor(task.priority)}>
-                              {task.priority}
-                            </Badge>
-                          </div>
-                          <h3 className="font-semibold">{task.title}</h3>
-                          <div className="text-sm text-muted-foreground">
-                            {task.format} • {task.itemType === 'item' ? 'Item' : 'Collection'}
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              <span>Due: {formatDate(task.dueDate)}</span>
+                <AccordionContent>
+                  <div className="space-y-3 pt-2">
+                    {tasks.map((task, index) => (
+                      <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4 gap-4">
+                              <div className="flex-1 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-muted-foreground">
+                                    {task.id}
+                                  </span>
+                                  <Badge className={getTaskStatusColor(task.status)}>
+                                    {task.status.replace(/_/g, ' ')}
+                                  </Badge>
+                                  <Badge className={getPriorityColor(task.priority)}>
+                                    {task.priority}
+                                  </Badge>
+                                </div>
+                                <h3 className="font-semibold">{task.title}</h3>
+                                <div className="text-sm text-muted-foreground">
+                                  {task.format} • {task.itemType === 'item' ? 'Item' : 'Collection'}
+                                </div>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    <span>Due: {formatDate(task.dueDate)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <User className="h-3 w-3" />
+                                    <span>{task.assignedTo}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              <span>{task.assignedTo}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </div>
 
-                      <div className="grid gap-4 md:grid-cols-4">
-                        <div className="space-y-2">
-                          <div className="text-sm font-medium">Format Risk:</div>
-                          <div className={`text-lg font-bold ${getRiskColor(task.formatRisk)}`}>
-                            {task.formatRisk.toUpperCase()}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="text-sm font-medium">Preservation Level:</div>
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((n) => (
-                              <div key={n} className="h-3 w-3 bg-primary/10 rounded-full flex items-center justify-center">
-                                <CheckCircle2 className="h-2 w-2 text-primary" />
+                            <div className="grid gap-4 md:grid-cols-4">
+                              <div className="space-y-2">
+                                <div className="text-sm font-medium">Format Risk:</div>
+                                <div className={`text-lg font-bold ${getRiskColor(task.formatRisk)}`}>
+                                  {task.formatRisk.toUpperCase()}
+                                </div>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="text-sm font-medium">Condition Grade:</div>
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((n) => (
-                              <div key={n} className="h-3 w-3 bg-primary/10 rounded-full flex items-center justify-center">
-                                <CheckCircle2 className="h-2 w-2 text-primary" />
+                              <div className="space-y-2">
+                                <div className="text-sm font-medium">Preservation Level:</div>
+                                <div className="flex items-center gap-1">
+                                  {[...Array(5)].map((n) => (
+                                    <div key={n} className="h-3 w-3 bg-primary/10 rounded-full flex items-center justify-center">
+                                      <CheckCircle2 className="h-2 w-2 text-primary" />
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                              <div className="space-y-2">
+                                <div className="text-sm font-medium">Condition Grade:</div>
+                                <div className="flex items-center gap-1">
+                                  {[...Array(5)].map((n) => (
+                                    <div key={n} className="h-3 w-3 bg-primary/10 rounded-full flex items-center justify-center">
+                                      <CheckCircle2 className="h-2 w-2 text-primary" />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </TabsContent>
 
           <TabsContent value="environment">

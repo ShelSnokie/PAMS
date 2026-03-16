@@ -38,10 +38,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
-import { useRouter } from 'next/navigation'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { cn } from '@/lib/utils'
 
 interface Exhibit {
   id: string
@@ -151,10 +154,11 @@ export default function OutreachCoordinatorDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ReportGenerator staffName="Dr. Amanda White" department="Public Relations" role="Outreach Coordinator" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Dr. Amanda White</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Outreach Dept</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Engagement Lead</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -182,68 +186,36 @@ export default function OutreachCoordinatorDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.label}
-                  </CardTitle>
-                  <stat.icon className="h-6 w-6 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-end justify-between">
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-xs text-muted-foreground">{stat.change}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8"
-        >
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action, index) => (
-              <motion.div
+        {/* Compact Outreach Actions Grid */}
+        <div className="mb-8">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Public Engagement Console</h2>
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {quickActions.map((action) => (
+              <DashboardCard
                 key={action.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Link href={action.href}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className={`h-10 w-10 rounded-lg ${action.color} flex items-center justify-center`}>
-                        <action.icon className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="font-medium">{action.title}</div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
+                title={action.title}
+                description="Community outreach management"
+                icon={action.icon}
+                color="text-primary"
+                href={action.href}
+              />
             ))}
           </div>
-        </motion.div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+          {stats.map((stat) => (
+            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                <div className="text-sm font-black">{stat.value}</div>
+              </div>
+              <stat.icon className="h-4 w-4 text-primary" />
+            </div>
+          ))}
+        </div>
+
+        {/* Removed redundant quick actions */}
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="exhibits" className="space-y-6">

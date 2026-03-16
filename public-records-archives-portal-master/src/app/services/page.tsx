@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion'
 import { FileCheck, Search, Users, Shield, Clock, MapPin, FileText, CheckCircle, ArrowRight, ExternalLink } from 'lucide-react'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -47,7 +49,7 @@ export default function ServicesPage() {
                 <div className="container mx-auto px-4 flex h-16 items-center justify-between">
                     <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
                         <div className="h-10 w-10 flex items-center justify-center">
-                            <FileCheck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                            <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
                         </div>
                         <div>
                             <h1 className="font-bold text-lg leading-tight">Public Records & Archives Portal</h1>
@@ -163,19 +165,7 @@ export default function ServicesPage() {
                 </section>
             </main>
 
-            {/* Footer */}
-            <footer className="border-t py-12">
-                <div className="container mx-auto px-4 text-center">
-                    <Link href="/" className="inline-flex items-center gap-2 mb-6 group">
-                        <FileCheck className="h-10 w-10 text-primary group-hover:scale-110 transition-transform" />
-                        <span className="text-xl font-bold">Archivum Lumen</span>
-                    </Link>
-                    <div className="text-sm text-muted-foreground space-y-2">
-                        <p>© {new Date().getFullYear()} National Archives of Zimbabwe. All rights reserved.</p>
-                        <p>Official Records & Archives Portal | Gun Hill, Harare</p>
-                    </div>
-                </div>
-            </footer>
+            <AnimatedFooter />
         </div>
     )
 }

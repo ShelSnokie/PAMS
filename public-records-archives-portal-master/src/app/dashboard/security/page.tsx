@@ -50,9 +50,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { DashboardCard } from '@/components/dashboard/DashboardCard'
+import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
 
 interface SecurityEvent {
   id: string
@@ -217,10 +217,11 @@ export default function SystemAdminDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ReportGenerator staffName="Officer John Smith" department="Security Services" role="Security Officer" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Officer John Smith</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Security Services</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Senior Officer</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -256,17 +257,32 @@ export default function SystemAdminDashboard() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {stats.map((stat) => (
-                <Card key={stat.label}>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{stat.label}</CardTitle>
-                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                  </CardContent>
-                </Card>
+            {/* Compact Security Actions Grid */}
+            <div className="mb-8">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Security Operations Console</h2>
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                {quickActions.map((action) => (
+                  <DashboardCard
+                    key={action.title}
+                    title={action.title}
+                    description="Access security module"
+                    icon={action.icon}
+                    color="text-primary"
+                    href={action.href}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {stats.slice(0, 4).map((stat) => (
+                <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                    <div className="text-sm font-black">{stat.value}</div>
+                  </div>
+                  <stat.icon className={cn("h-4 w-4", stat.color)} />
+                </div>
               ))}
             </div>
 
@@ -371,24 +387,7 @@ export default function SystemAdminDashboard() {
           </TabsContent>
         </Tabs>
 
-        {/* Quick Actions at bottom */}
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <Link key={action.title} href={action.href}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full border-primary/20">
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className={`h-10 w-10 rounded-lg ${action.color} flex items-center justify-center`}>
-                      <action.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="font-medium text-xs">{action.title}</div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
+        {/* Removed obsolete redundant quick actions at bottom */}
       </main>
 
       <AnimatedFooter />
