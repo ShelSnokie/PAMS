@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../db/custom.db"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  fullName      String
+  password      String
+  role          String    @default("PUBLIC")
+  department    String    @default("General")
+  status        String    @default("active")
+  employeeId    String?   @unique
+  accessControl String    @default("RESTRICTED")
+  mfaEnabled    Boolean   @default(false)
+  lastLogin     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  AuditLogs     AuditLog[]
+  CreatedRecords Record[] @relation("CreatedBy")
+}
+
+model Record {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  referenceNo String   @unique
+  type        String   // e.g., "DOC", "IMAGE", "VIDEO"
+  status      String   @default("pending") // pending, approved, rejected, archived
+  dateCreated DateTime @default(now())
+  dateModified DateTime @updatedAt
+  
+  department  String
+  collectionId String?
+  collection  Collection? @relation(fields: [collectionId], references: [id])
+  
+  createdBy   String
+  creator     User     @relation("CreatedBy", fields: [createdBy], references: [id])
+  
+  metadata    String?  // JSON stringified metadata
+  tags        String?  // JSON stringified tags
+  
+  fileUrl     String?  // Path to the actual file in storage
+
+  CertifiedCopyRequests CertifiedCopyRequest[]
+}
+
+model Collection {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  code        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  Records     Record[]
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  resource  String
+  details   String?  // JSON stringified details
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model CertifiedCopyRequest {
+  id            String   @id @default(uuid())
+  recordId      String
+  record        Record   @relation(fields: [recordId], references: [id])
+  requesterName String
+  requesterEmail String
+  purpose       String
+  status        String   @default("pending") // pending, processing, completed, rejected
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

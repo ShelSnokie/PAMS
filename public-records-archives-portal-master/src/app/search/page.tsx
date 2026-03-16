@@ -14,17 +14,18 @@ import Link from 'next/link'
 
 interface SearchResult {
   id: string
-  identifier: string
+  referenceNo: string
   title: string
   description: string
-  date: string
-  location?: string
-  creator?: string
-  format: string
-  collection: string
-  accessLevel: string
-  viewCount: number
-  hasDigitalCopy: boolean
+  dateCreated: string
+  department: string
+  type: string
+  collection?: {
+    name: string
+  }
+  accessLevel?: string
+  viewCount?: number
+  hasDigitalCopy?: boolean
 }
 
 export default function SearchPage() {
@@ -33,9 +34,9 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
   const [filters, setFilters] = useState({
-    format: 'all',
-    dateRange: 'all',
-    accessLevel: 'all',
+    type: 'all',
+    department: 'all',
+    status: 'all',
   })
 
   useEffect(() => {
@@ -46,104 +47,38 @@ export default function SearchPage() {
   }, [])
 
   const handleSearch = async () => {
-    if (!query.trim()) return
-
     setLoading(true)
     setHasSearched(true)
 
-    // Simulate search results for public records
-    setTimeout(() => {
-      setResults([
-        {
-          id: '1',
-          identifier: 'BC-1985-0145892',
-          title: 'Birth Certificate - John Michael Smith',
-          description: 'Official birth certificate issued by County Clerk, includes date of birth, parent information, and place of birth.',
-          date: '1985-03-15',
-          location: 'Los Angeles County, California',
-          creator: 'County Clerk\'s Office',
-          format: 'document',
-          collection: 'Vital Records (VR-001)',
-          accessLevel: 'public',
-          viewCount: 245,
-          hasDigitalCopy: true,
-        },
-        {
-          id: '2',
-          identifier: 'DC-2019-0008472',
-          title: 'Death Certificate - Mary Elizabeth Johnson',
-          description: 'Official death certificate recording date and cause of death, funeral home information, and next of kin.',
-          date: '2019-11-22',
-          location: 'Cook County, Illinois',
-          creator: 'Vital Records Office',
-          format: 'document',
-          collection: 'Vital Records (VR-001)',
-          accessLevel: 'public',
-          viewCount: 189,
-          hasDigitalCopy: true,
-        },
-        {
-          id: '3',
-          identifier: 'ML-2010-0023456',
-          title: 'Marriage License - Robert Chen & Sarah Williams',
-          description: 'Marriage license and certificate issued by County Clerk, includes wedding date, location, and officiant information.',
-          date: '2010-06-18',
-          location: 'King County, Washington',
-          creator: 'County Clerk\'s Office',
-          format: 'document',
-          collection: 'Vital Records (VR-001)',
-          accessLevel: 'public',
-          viewCount: 156,
-          hasDigitalCopy: true,
-        },
-        {
-          id: '4',
-          identifier: 'PR-2005-0145678',
-          title: 'Property Deed - 123 Maple Street',
-          description: 'Property deed and title transfer documents showing ownership history, property description, and legal description.',
-          date: '2005-08-01',
-          location: 'Harris County, Texas',
-          creator: 'County Recorder',
-          format: 'document',
-          collection: 'Property Records (PR-002)',
-          accessLevel: 'public',
-          viewCount: 345,
-          hasDigitalCopy: true,
-        },
-        {
-          id: '5',
-          identifier: 'CR-2018-0012345',
-          title: 'Civil Court Case - Smith v. Johnson Corp',
-          description: 'Civil case filing including complaint, motions, and final judgment. Case number 18-CV-04567.',
-          date: '2018-04-10',
-          location: 'Maricopa County, Arizona',
-          creator: 'Superior Court',
-          format: 'document',
-          collection: 'Court Records (CR-003)',
-          accessLevel: 'public',
-          viewCount: 278,
-          hasDigitalCopy: true,
-        },
-        {
-          id: '6',
-          identifier: 'BL-2021-0067890',
-          title: 'Business License - ABC Corporation',
-          description: 'Business license application and approval, includes business type, ownership, and license expiration date.',
-          date: '2021-01-15',
-          location: 'Miami-Dade County, Florida',
-          creator: 'Business Licensing Division',
-          format: 'document',
-          collection: 'Business Records (BL-004)',
-          accessLevel: 'public',
-          viewCount: 123,
-          hasDigitalCopy: true,
-        },
-      ])
-      setLoading(false)
+    try {
+      const params = new URLSearchParams({
+        search: query,
+        limit: '20',
+      })
+
+      if (filters.type !== 'all') params.append('type', filters.type)
+      if (filters.department !== 'all') params.append('department', filters.department)
+      if (filters.status !== 'all') params.append('status', filters.status)
+
+      const response = await fetch(`/api/records?${params.toString()}`)
+      const data = await response.json()
+
+      if (data.records) {
+        setResults(data.records)
+      } else {
+        setResults([])
+      }
 
       // Save search to localStorage
-      localStorage.setItem('lastSearch', query)
-    }, 1500)
+      if (query) {
+        localStorage.setItem('lastSearch', query)
+      }
+    } catch (error) {
+      console.error('Search failed:', error)
+      setResults([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const clearSearch = () => {
@@ -234,79 +169,36 @@ export default function SearchPage() {
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium">Record Type:</label>
-                  <Select value={filters.format} onValueChange={(val) => setFilters({ ...filters, format: val })}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="All types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="birth">Birth Records</SelectItem>
-                      <SelectItem value="death">Death Records</SelectItem>
-                      <SelectItem value="marriage">Marriage Records</SelectItem>
-                      <SelectItem value="property">Property Records</SelectItem>
-                      <SelectItem value="court">Court Records</SelectItem>
-                      <SelectItem value="business">Business Records</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium">Record Type:</label>
+                    <Select value={filters.type} onValueChange={(val) => setFilters({ ...filters, type: val })}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="All types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="DOC">Documents</SelectItem>
+                        <SelectItem value="IMAGE">Images</SelectItem>
+                        <SelectItem value="VIDEO">Videos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">Access:</label>
-                  <Select value={filters.accessLevel} onValueChange={(val) => setFilters({ ...filters, accessLevel: val })}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="All levels" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Levels</SelectItem>
-                      <SelectItem value="public">Public Only</SelectItem>
-                      <SelectItem value="restricted">Restricted</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium">Department:</label>
+                    <Select value={filters.department} onValueChange={(val) => setFilters({ ...filters, department: val })}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="All departments" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Departments</SelectItem>
+                        <SelectItem value="Vital Records">Vital Records</SelectItem>
+                        <SelectItem value="Court Administration">Court Administration</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">Date:</label>
-                  <Select value={filters.dateRange} onValueChange={(val) => setFilters({ ...filters, dateRange: val })}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="All dates" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Dates</SelectItem>
-                      <SelectItem value="1900s">1900-1949</SelectItem>
-                      <SelectItem value="1950s">1950-1979</SelectItem>
-                      <SelectItem value="1980s">1980-1999</SelectItem>
-                      <SelectItem value="2000s">2000-Present</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Link href="/advanced-search">
-                  <Button variant="outline" size="sm">
-                    Advanced Search
-                  </Button>
-                </Link>
-              </div>
             </form>
-
-            {/* Search Tips */}
-            <div className="grid grid-cols-4 gap-4 mt-6">
-              <div className="text-sm space-y-1">
-                <p className="font-medium">Birth Records</p>
-                <p className="text-muted-foreground">Birth certificates, registries...</p>
-              </div>
-              <div className="text-sm space-y-1">
-                <p className="font-medium">Property Records</p>
-                <p className="text-muted-foreground">Deeds, titles, transfers...</p>
-              </div>
-              <div className="text-sm space-y-1">
-                <p className="font-medium">Court Records</p>
-                <p className="text-muted-foreground">Civil, criminal cases...</p>
-              </div>
-              <div className="text-sm space-y-1">
-                <p className="font-medium">Business Records</p>
-                <p className="text-muted-foreground">Licenses, permits, filings...</p>
-              </div>
-            </div>
           </motion.div>
         </div>
       </section>
@@ -322,9 +214,6 @@ export default function SearchPage() {
                 <p className="text-muted-foreground mb-4">
                   We couldn't find any records matching "{query}"
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Try adjusting your search terms or filters
-                </p>
                 <Button onClick={() => setQuery('')}>
                   <Search className="mr-2 h-4 w-4" />
                   Clear Search
@@ -339,28 +228,6 @@ export default function SearchPage() {
                       {query && <span className="text-lg font-normal text-muted-foreground"> for "{query}"</span>}
                     </h2>
                   </div>
-                  <div className="flex gap-2">
-                    <Select defaultValue="relevance">
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="relevance">Relevance</SelectItem>
-                        <SelectItem value="date">Date</SelectItem>
-                        <SelectItem value="title">Title A-Z</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Select defaultValue="grid">
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="grid">Grid</SelectItem>
-                      <SelectItem value="list">List</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="outline">Save Search</Button>
                 </div>
 
                 <motion.div
@@ -384,11 +251,13 @@ export default function SearchPage() {
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex items-center gap-2">
                                 <span className="text-xs font-medium text-muted-foreground">
-                                  {result.identifier}
+                                  {result.referenceNo}
                                 </span>
-                                <Badge className="bg-green-100 text-green-800">
-                                  {result.accessLevel}
-                                </Badge>
+                                {result.accessLevel && (
+                                  <Badge className="bg-green-100 text-green-800">
+                                    {result.accessLevel}
+                                  </Badge>
+                                )}
                               </div>
                               <Button variant="ghost" size="icon">
                                 <Star className="h-4 w-4" />
@@ -405,29 +274,23 @@ export default function SearchPage() {
                             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Calendar className="h-3 w-3 text-primary" />
-                                <span>{result.date}</span>
+                                <span>{new Date(result.dateCreated).toLocaleDateString()}</span>
                               </div>
-                              {result.location && (
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3 text-primary" />
-                                  <span>{result.location}</span>
-                                </div>
-                              )}
-                              {result.creator && (
-                                <div className="flex items-center gap-1">
-                                  <User className="h-3 w-3 text-primary" />
-                                  <span>{result.creator}</span>
-                                </div>
-                              )}
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3 text-primary" />
+                                <span>{result.department}</span>
+                              </div>
                             </div>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                              {result.viewCount !== undefined && (
+                                <div className="flex items-center gap-1">
+                                  <Eye className="h-4 w-4" />
+                                  <span>{result.viewCount.toLocaleString()} views</span>
+                                </div>
+                              )}
                               <div className="flex items-center gap-1">
-                                <Eye className="h-4 w-4" />
-                                <span>{result.viewCount.toLocaleString()} views</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {getFormatIcon(result.format)}
-                                <span className="capitalize">{result.format}</span>
+                                {getFormatIcon(result.type.toLowerCase())}
+                                <span className="capitalize">{result.type}</span>
                               </div>
                               {result.hasDigitalCopy && (
                                 <Badge className="bg-blue-100 text-blue-800">Digital</Badge>
@@ -436,7 +299,7 @@ export default function SearchPage() {
                           </CardContent>
                           <CardFooter className="flex items-center justify-between border-t pt-4">
                             <span className="text-xs text-muted-foreground">
-                              {result.collection}
+                              {result.collection?.name || 'Uncategorized'}
                             </span>
                             <Button size="sm" className="gap-2">
                               <Eye className="h-4 w-4" />
