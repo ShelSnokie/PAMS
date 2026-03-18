@@ -31,7 +31,7 @@ export default function ServicesPage() {
             description: 'Access the National Archives for historical research, academic study, and lineage tracing.',
             icon: FileText,
             features: ['Historical Manuscripts', 'Genealogy Research', 'Rare Document Access'],
-            href: '/collections'
+            href: '/search'
         },
         {
             title: 'Document Authentication',
@@ -58,10 +58,6 @@ export default function ServicesPage() {
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-6">
-
-                        <Link href="/collections" className="text-sm font-medium hover:text-primary transition-colors">
-                            Collections
-                        </Link>
                         <Link href="/services" className="text-sm font-medium text-primary">
                             Services
                         </Link>
@@ -97,44 +93,44 @@ export default function ServicesPage() {
                 </section>
 
                 {/* Services Grid */}
-                <section className="py-20">
+                <section className="py-12">
                     <div className="container mx-auto px-4">
-                        <div className="grid md:grid-cols-2 gap-8">
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {services.map((service, index) => (
                                 <motion.div
                                     key={service.title}
                                     initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
-                                    whileHover={{ y: -8, scale: 1.02 }}
+                                    whileHover={{ y: -5, scale: 1.02 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                     className="cursor-pointer group"
                                 >
-                                    <Card className="h-full hover:shadow-xl transition-all duration-300 border-2">
-                                        <CardHeader>
-                                            <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                                                <service.icon className="h-8 w-8 text-primary" />
+                                    <Card className="h-full hover:shadow-lg transition-all duration-300 border">
+                                        <CardHeader className="pb-2 pt-4 px-4">
+                                            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                                                <service.icon className="h-5 w-5 text-primary" />
                                             </div>
-                                            <CardTitle className="text-2xl mb-2">{service.title}</CardTitle>
-                                            <CardDescription className="text-base leading-relaxed">
+                                            <CardTitle className="text-base mb-1">{service.title}</CardTitle>
+                                            <CardDescription className="text-xs leading-relaxed">
                                                 {service.description}
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent>
-                                            <ul className="space-y-3">
+                                        <CardContent className="px-4 pb-2">
+                                            <ul className="space-y-1.5">
                                                 {service.features.map((feature) => (
-                                                    <li key={feature} className="flex items-center gap-3 text-sm text-muted-foreground">
-                                                        <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                                                    <li key={feature} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                        <CheckCircle className="h-3 w-3 text-primary flex-shrink-0" />
                                                         {feature}
                                                     </li>
                                                 ))}
                                             </ul>
                                         </CardContent>
-                                        <CardFooter className="pt-6 border-t mt-4">
-                                            <Button className="w-full gap-2" variant="outline" asChild>
+                                        <CardFooter className="pt-3 border-t mt-2 px-4 pb-4">
+                                            <Button className="w-full gap-1 h-8 text-xs" variant="outline" asChild>
                                                 <Link href={service.href}>
                                                     Access Service
-                                                    <ArrowRight className="h-4 w-4" />
+                                                    <ArrowRight className="h-3 w-3" />
                                                 </Link>
                                             </Button>
                                         </CardFooter>
@@ -157,7 +153,7 @@ export default function ServicesPage() {
                             <Button size="lg" variant="secondary" className="px-8" asChild>
                                 <Link href="/help">Contact Support</Link>
                             </Button>
-                            <Button size="lg" variant="outline" className="px-8 border-primary-foreground/20 hover:bg-primary-foreground/10" asChild>
+                            <Button size="lg" variant="secondary" className="px-8" asChild>
                                 <Link href="/search">Start Searching</Link>
                             </Button>
                         </div>

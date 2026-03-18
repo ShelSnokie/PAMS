@@ -65,10 +65,6 @@ export default function VisitOfficePage() {
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-6">
-
-                        <Link href="/collections" className="text-sm font-medium hover:text-primary transition-colors">
-                            Collections
-                        </Link>
                         <Link href="/services" className="text-sm font-medium hover:text-primary transition-colors">
                             Services
                         </Link>

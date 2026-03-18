@@ -50,6 +50,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { DashboardCard } from '@/components/dashboard/DashboardCard'
 import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { cn } from '@/lib/utils'
 
 interface PreservationTask {

@@ -117,8 +117,6 @@ export default function SearchPage() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-
-            <Link href="/collections" className="text-sm font-medium hover:text-primary transition-colors">Record Types</Link>
             <Link href="/services" className="text-sm font-medium hover:text-primary transition-colors">Services</Link>
             <Link href="/help" className="text-sm font-medium hover:text-primary transition-colors">Help Center</Link>
           </nav>

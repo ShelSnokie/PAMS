@@ -31,6 +31,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { DashboardCard } from '@/components/dashboard/DashboardCard'
 import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
 import { cn } from '@/lib/utils'

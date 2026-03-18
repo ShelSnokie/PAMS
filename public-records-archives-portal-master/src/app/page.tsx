@@ -77,9 +77,6 @@ export default function PublicRecordsHome() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/collections" className="text-sm font-medium hover:text-primary transition-colors">
-              Collections
-            </Link>
             <Link href="/services" className="text-sm font-medium hover:text-primary transition-colors">
               Services
             </Link>
@@ -218,7 +215,7 @@ export default function PublicRecordsHome() {
               transition={{ duration: 0.5, delay: 0.6 }}
               className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
             >
-              <Link href="/collections" className="flex items-center gap-1 hover:text-primary transition-colors">
+              <Link href="/search" className="flex items-center gap-1 hover:text-primary transition-colors">
                 <FileText className="h-4 w-4" />
                 Browse Record Types
               </Link>
@@ -273,7 +270,7 @@ export default function PublicRecordsHome() {
                 Most commonly requested public records
               </p>
             </div>
-            <Link href="/collections">
+            <Link href="/search">
               <Button variant="outline">
                 View All Records →
               </Button>

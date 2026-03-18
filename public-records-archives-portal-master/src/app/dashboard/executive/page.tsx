@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
   Shield,
@@ -57,6 +58,8 @@ import {
 import Link from 'next/link'
 import { DashboardCard } from '@/components/dashboard/DashboardCard'
 import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { cn } from '@/lib/utils'
 
 interface ArchivalProject {
