@@ -1,18 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users,
   Plus,
   Edit,
-  Trash2,
   Search,
   CheckCircle,
   XCircle,
   Loader2,
   Shield,
-  Check
+  ChevronDown,
+  ChevronRight,
+  Crown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,87 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DEPARTMENTS } from '@/lib/constants/departments'
 import { USER_ROLES, ROLE_DISPLAY_NAMES, ACCESS_CONTROL } from '@/lib/constants/roles'
 import { Checkbox } from '@/components/ui/checkbox'
+
+// Admin-level roles to highlight as dept admins
+const ADMIN_ROLES = ['system_admin', 'executive', 'department_head', 'manager', 'supervisor']
+
+function DeptAdminSummary({ users }: { users: User[] }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const departments = Object.values(DEPARTMENTS).filter(d => d !== 'ALL')
+  const deptAdmins: Record<string, User[]> = {}
+  for (const dept of departments) {
+    const admins = users.filter(u =>
+      u.department === dept &&
+      u.status === 'active' &&
+      u.roles.some(r => ADMIN_ROLES.includes(r))
+    )
+    if (admins.length) deptAdmins[dept] = admins
+  }
+
+  const adminCount = Object.values(deptAdmins).flat().length
+
+  return (
+    <Card className="mb-6 border-primary/20">
+      <CardHeader
+        className="py-3 cursor-pointer select-none bg-primary/5"
+        onClick={() => setExpanded(v => !v)}
+      >
+        <CardTitle className="text-sm font-bold flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <Crown className="h-4 w-4 text-primary" />
+            Department Administrators
+            <Badge className="bg-primary/10 text-primary text-[10px]">{adminCount} admin{adminCount !== 1 ? 's' : ''}</Badge>
+          </span>
+          {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+        </CardTitle>
+      </CardHeader>
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <CardContent className="p-4">
+              {Object.keys(deptAdmins).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No department administrators found.</p>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {Object.entries(deptAdmins).map(([dept, admins]) => (
+                    <div key={dept} className="border rounded-lg p-3 bg-muted/10">
+                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{dept}</div>
+                      {admins.map(a => (
+                        <div key={a.id} className="flex items-center gap-2 mb-1.5 last:mb-0">
+                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                            {(a.fullName || a.username).charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold truncate">{a.fullName || a.username}</div>
+                            <div className="text-[10px] text-muted-foreground truncate">{a.email}</div>
+                          </div>
+                          <div className="flex flex-wrap gap-0.5">
+                            {a.roles.filter(r => ADMIN_ROLES.includes(r)).map(r => (
+                              <Badge key={r} className="text-[9px] py-0 h-4 bg-primary/10 text-primary">
+                                {ROLE_DISPLAY_NAMES[r as keyof typeof ROLE_DISPLAY_NAMES] || r}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Card>
+  )
+}
 
 interface User {
   id: string
@@ -194,6 +276,9 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
+      {/* Department Administrators Summary */}
+      <DeptAdminSummary users={users} />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Server,
   Users,
@@ -9,35 +9,22 @@ import {
   Activity,
   ShieldAlert,
   CheckCircle2,
-  TrendingUp,
   Clock,
   HardDrive,
   Cpu,
   AlertTriangle,
   MoreHorizontal,
-  RefreshCw,
   FileCheck,
-  ChevronRight,
-  Shield
+  Shield,
+  ChevronDown,
+  ChevronUp,
+  Lock,
+  Settings,
+  ClipboardList,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { Progress } from '@/components/ui/progress'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -46,12 +33,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
 import UserManagement from '@/components/admin/UserManagement'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import { DashboardCard } from '@/components/dashboard/DashboardCard'
 import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
+import { SecurityAuditPanel } from '@/components/admin/SecurityAuditPanel'
 import { cn } from '@/lib/utils'
 
 interface SystemStat {
@@ -65,11 +59,11 @@ interface SystemStat {
 export default function SystemAdminDashboard() {
   const [systemStats, setSystemStats] = useState<SystemStat[]>([])
   const [loading, setLoading] = useState(true)
-  const [showSecurityDialog, setShowSecurityDialog] = useState(false)
-  const [showSystemDialog, setShowSystemDialog] = useState(false)
+  const [securityExpanded, setSecurityExpanded] = useState(true)
+  const [kernelExpanded, setKernelExpanded] = useState(true)
+  const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Simulate loading system stats
     setTimeout(() => {
       setSystemStats([
         { label: 'Server Status', value: 'Online', icon: Server, status: 'healthy' },
@@ -96,9 +90,9 @@ export default function SystemAdminDashboard() {
     if (!status) return null
     return (
       <Badge className={
-        status === 'healthy' ? 'bg-green-100 text-green-800' :
-          status === 'warning' ? 'bg-amber-100 text-amber-800' :
-            'bg-red-100 text-red-800'
+        status === 'healthy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+          status === 'warning' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
+            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
       }>
         {status}
       </Badge>
@@ -111,36 +105,29 @@ export default function SystemAdminDashboard() {
         <Clock className="h-4 w-4 text-blue-600" />
   }
 
-  // Summary logic
-  const criticalAlertsCount = securityAlerts.filter(a => a.type === 'critical').length
-  const warningAlertsCount = securityAlerts.filter(a => a.type === 'warning').length
-  const systemHealthStatus = systemStats.find(s => s.label === 'Server Status')?.status === 'healthy' ? 'Optimal' : 'Issues Detected';
+  const handleAcknowledge = (id: string) => {
+    setAcknowledgedAlerts(prev => new Set([...prev, id]))
+  }
+
+  const unacknowledgedAlerts = securityAlerts.filter(a => !acknowledgedAlerts.has(a.id))
+  const hasUnacknowledgedIssues = unacknowledgedAlerts.some(a => a.type === 'critical' || a.type === 'warning')
+  const hasKernelIssues = systemStats.some(s => s.status === 'warning' || s.status === 'critical')
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
               <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
                 <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
+                <h1 className="font-bold text-sm leading-tight">National Archives of Zimbabwe</h1>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Official Records & Archives Portal</p>
               </div>
             </Link>
-            <div className="h-8 w-px bg-border hidden md:block" />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-                <Server className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-sm">System Administrator</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Technical Console</p>
-              </div>
-            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -179,165 +166,263 @@ export default function SystemAdminDashboard() {
         <div className="mb-8">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">System Management Console</h2>
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+
             {/* User Management */}
-            <Sheet>
-              <SheetTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <div>
                   <DashboardCard
                     title="User Management"
                     description="Administer access and accounts"
                     icon={Users}
-                    color="text-blue-600"
+                    color="text-primary"
                   />
                 </div>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:max-w-4xl overflow-y-auto">
-                <SheetHeader className="mb-6">
-                  <SheetTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="mb-4">
+                  <DialogTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" />
                     User Management
-                  </SheetTitle>
-                  <SheetDescription>Manage system access and update user details.</SheetDescription>
-                </SheetHeader>
+                  </DialogTitle>
+                  <DialogDescription>Manage system access and update user details.</DialogDescription>
+                </DialogHeader>
                 <UserManagement />
-              </SheetContent>
-            </Sheet>
+              </DialogContent>
+            </Dialog>
 
             {/* Role Permissions */}
-            <Sheet>
-              <SheetTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <div>
                   <DashboardCard
                     title="Role Permissions"
                     description="Configure access control matrix"
                     icon={ShieldAlert}
-                    color="text-amber-600"
+                    color="text-primary"
                   />
                 </div>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:max-w-3xl overflow-y-auto">
-                <SheetHeader className="mb-6">
-                  <SheetTitle className="flex items-center gap-2">
-                    <ShieldAlert className="h-5 w-5" />
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="mb-4">
+                  <DialogTitle className="flex items-center gap-2">
+                    <ShieldAlert className="h-5 w-5 text-primary" />
                     Role Permissions
-                  </SheetTitle>
-                  <SheetDescription>Configure granular role-based permissions.</SheetDescription>
-                </SheetHeader>
+                  </DialogTitle>
+                  <DialogDescription>Configure granular role-based permissions.</DialogDescription>
+                </DialogHeader>
                 <div className="grid gap-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium">Role Configuration</h3>
                     <Button><ShieldAlert className="mr-2 h-4 w-4" /> Add Role</Button>
                   </div>
-                  <Card><CardContent className="p-12 text-center text-muted-foreground">Permission matrix viewer placeholder</CardContent></Card>
+                  <Card><CardContent className="p-12 text-center text-muted-foreground">Permission matrix viewer — coming soon</CardContent></Card>
                 </div>
-              </SheetContent>
-            </Sheet>
+              </DialogContent>
+            </Dialog>
 
             {/* System Settings */}
-            <Sheet>
-              <SheetTrigger asChild>
+            <Dialog>
+              <DialogTrigger asChild>
                 <div>
                   <DashboardCard
                     title="System Settings"
                     description="Global portal configuration"
-                    icon={Server}
+                    icon={Settings}
                     color="text-primary"
                   />
                 </div>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:max-w-2xl overflow-y-auto">
-                <SheetHeader className="mb-6">
-                  <SheetTitle className="flex items-center gap-2">
-                    <Server className="h-5 w-5" />
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="mb-4">
+                  <DialogTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-primary" />
                     System Settings
-                  </SheetTitle>
-                  <SheetDescription>Manage global configurations.</SheetDescription>
-                </SheetHeader>
-                <Card><CardContent className="p-12 text-center text-muted-foreground">Settings configuration placeholder</CardContent></Card>
-              </SheetContent>
-            </Sheet>
+                  </DialogTitle>
+                  <DialogDescription>Manage global portal configurations.</DialogDescription>
+                </DialogHeader>
+                <Card><CardContent className="p-12 text-center text-muted-foreground">Settings configuration — coming soon</CardContent></Card>
+              </DialogContent>
+            </Dialog>
 
-            {/* Audit Logs */}
-            <Sheet>
-              <SheetTrigger asChild>
+            {/* Security Audit */}
+            <Dialog>
+              <DialogTrigger asChild>
                 <div>
                   <DashboardCard
                     title="Security Audit"
                     description="Review system activity trails"
-                    icon={Activity}
-                    color="text-purple-600"
+                    icon={ClipboardList}
+                    color="text-primary"
                   />
                 </div>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[85vw] sm:max-w-5xl overflow-y-auto">
-                <SheetHeader className="mb-6">
-                  <SheetTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Audit Logs
-                  </SheetTitle>
-                  <SheetDescription>Review detailed system logs.</SheetDescription>
-                </SheetHeader>
-                <Card><CardContent className="p-12 text-center text-muted-foreground">Audit log viewer placeholder</CardContent></Card>
-              </SheetContent>
-            </Sheet>
+              </DialogTrigger>
+              <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="mb-4">
+                  <DialogTitle className="flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5 text-primary" />
+                    Security Audit
+                  </DialogTitle>
+                  <DialogDescription>Audit and monitor employee accounts by department.</DialogDescription>
+                </DialogHeader>
+                <SecurityAuditPanel />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
-        {/* System Health Overview (Compact) */}
+        {/* System Health — Collapsible Sections */}
         <div className="grid gap-6 md:grid-cols-2">
+
+          {/* Security Overwatch — collapsible */}
           <Card className="border-muted/40 overflow-hidden">
-            <CardHeader className="py-3 bg-muted/20">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Security Overwatch
+            <CardHeader
+              className="py-3 bg-muted/20 cursor-pointer select-none"
+              onClick={() => setSecurityExpanded(v => !v)}
+            >
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  Security Overwatch
+                  {hasUnacknowledgedIssues && (
+                    <Badge className="bg-red-100 text-red-700 text-[9px] ml-1">
+                      {unacknowledgedAlerts.filter(a => a.type !== 'info').length} issue{unacknowledgedAlerts.filter(a => a.type !== 'info').length !== 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                </span>
+                {securityExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-muted/40">
-                {securityAlerts.map((alert) => (
-                  <div key={alert.id} className="p-3 hover:bg-muted/5 transition-colors">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "h-7 w-7 rounded-full flex items-center justify-center",
-                          alert.type === 'critical' ? 'bg-red-100' : 'bg-amber-100'
-                        )}>
-                          {getAlertIcon(alert.type)}
-                        </div>
-                        <div>
-                          <div className="text-xs font-bold">{alert.title}</div>
-                          <div className="text-[10px] text-muted-foreground">{alert.time} • {alert.description}</div>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" className="h-7 text-[10px]">Acknowledge</Button>
+            <AnimatePresence initial={false}>
+              {securityExpanded && (
+                <motion.div
+                  key="security-body"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <CardContent className="p-0">
+                    <div className="divide-y divide-muted/40">
+                      {securityAlerts.map((alert) => {
+                        const isAcknowledged = acknowledgedAlerts.has(alert.id)
+                        const needsAction = !isAcknowledged && (alert.type === 'critical' || alert.type === 'warning')
+                        return (
+                          <motion.div
+                            key={alert.id}
+                            animate={needsAction ? {
+                              y: [0, -4, 0, -4, 0],
+                            } : { y: 0 }}
+                            transition={needsAction ? {
+                              repeat: Infinity,
+                              duration: 2,
+                              ease: 'easeInOut',
+                              repeatDelay: 1,
+                            } : {}}
+                            className={cn(
+                              "p-3 transition-colors",
+                              isAcknowledged ? 'opacity-50' : alert.type === 'critical' ? 'hover:bg-red-50/50 dark:hover:bg-red-900/10' : 'hover:bg-muted/5'
+                            )}
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  "h-7 w-7 rounded-full flex items-center justify-center",
+                                  alert.type === 'critical' ? 'bg-red-100 dark:bg-red-900/30' :
+                                    alert.type === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30' :
+                                      'bg-blue-100 dark:bg-blue-900/30'
+                                )}>
+                                  {getAlertIcon(alert.type)}
+                                </div>
+                                <div>
+                                  <div className="text-xs font-bold">{alert.title}</div>
+                                  <div className="text-[10px] text-muted-foreground">{alert.time} • {alert.description}</div>
+                                </div>
+                              </div>
+                              {!isAcknowledged ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-[10px] shrink-0"
+                                  onClick={() => handleAcknowledge(alert.id)}
+                                >
+                                  Acknowledge
+                                </Button>
+                              ) : (
+                                <Badge className="bg-green-100 text-green-700 text-[9px] shrink-0">Acknowledged</Badge>
+                              )}
+                            </div>
+                          </motion.div>
+                        )
+                      })}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Card>
 
+          {/* Kernel Metrics — collapsible */}
           <Card className="border-muted/40 overflow-hidden">
-            <CardHeader className="py-3 bg-muted/20">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                Kernel Metrics
+            <CardHeader
+              className="py-3 bg-muted/20 cursor-pointer select-none"
+              onClick={() => setKernelExpanded(v => !v)}
+            >
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" />
+                  Kernel Metrics
+                  {!loading && hasKernelIssues && (
+                    <Badge className="bg-amber-100 text-amber-700 text-[9px] ml-1">warning</Badge>
+                  )}
+                </span>
+                {kernelExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-3">
-              <div className="grid grid-cols-2 gap-3">
-                {systemStats.slice(0, 4).map((stat) => (
-                  <div key={stat.label} className="flex items-center justify-between p-2 border rounded bg-muted/10">
-                    <div>
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
-                      <div className="text-sm font-black">{stat.value}</div>
+            <AnimatePresence initial={false}>
+              {kernelExpanded && (
+                <motion.div
+                  key="kernel-body"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <CardContent className="p-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      {systemStats.slice(0, 4).map((stat) => {
+                        const hasIssue = stat.status === 'warning' || stat.status === 'critical'
+                        return (
+                          <motion.div
+                            key={stat.label}
+                            animate={hasIssue ? {
+                              y: [0, -4, 0, -4, 0],
+                            } : { y: 0 }}
+                            transition={hasIssue ? {
+                              repeat: Infinity,
+                              duration: 2,
+                              ease: 'easeInOut',
+                              repeatDelay: 1.5,
+                            } : {}}
+                            className="flex items-center justify-between p-2 border rounded bg-muted/10"
+                          >
+                            <div>
+                              <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                              <div className="text-sm font-black">{stat.value}</div>
+                            </div>
+                            {getStatusBadge(stat.status)}
+                          </motion.div>
+                        )
+                      })}
                     </div>
-                    {getStatusBadge(stat.status)}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Card>
+
         </div>
       </main>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     User,
@@ -46,15 +46,29 @@ function ProfileSettingsContent() {
     const [showSaveSuccess, setShowSaveSuccess] = useState(false)
 
     const [profileData, setProfileData] = useState({
-        firstName: 'John',
-        lastName: role === 'admin' ? 'Administrator' : role === 'staff' ? 'Staff' : 'Researcher',
+        firstName: '',
+        lastName: role === 'admin' ? 'Administrator' : role === 'staff' ? 'Staff' : 'User',
         email: `${role}@example.com`,
-        phone: '+263 712 345 678',
-        address: '123 Main Street, Harare',
-        bio: `${role === 'admin' ? 'System Administrator' : role === 'staff' ? 'Archives Staff Member' : 'Researcher'} specializing in historical archives and public records.`,
+        phone: '',
+        address: '',
+        bio: `${role === 'admin' ? 'System Administrator' : role === 'staff' ? 'Archives Staff Member' : 'Public user of the archives portal.'}`,
         department: role !== 'user' ? 'Archives Management' : '',
         position: role !== 'user' ? (role === 'admin' ? 'Chief Administrator' : 'Senior Archivist') : '',
     })
+
+    useEffect(() => {
+        if (role === 'user') {
+            const storedName = localStorage.getItem('portal_userName')
+            if (storedName) {
+                const parts = storedName.trim().split(' ')
+                setProfileData(prev => ({
+                    ...prev,
+                    firstName: parts[0] || '',
+                    lastName: parts.slice(1).join(' ') || ''
+                }))
+            }
+        }
+    }, [role])
 
     const [notifications, setNotifications] = useState({
         emailNotifications: true,
@@ -78,7 +92,7 @@ function ProfileSettingsContent() {
 
     const getRoleBadge = () => {
         const badges = {
-            user: { label: 'User/Researcher', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' },
+            user: { label: 'Public User', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' },
             staff: { label: 'Staff', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100' },
             admin: { label: 'Administrator', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100' },
         }
@@ -127,7 +141,7 @@ function ProfileSettingsContent() {
                             <Avatar className="h-24 w-24">
                                 <AvatarImage src="" alt="Profile" />
                                 <AvatarFallback className="text-2xl">
-                                    {profileData.firstName[0]}{profileData.lastName[0]}
+                                    {profileData.firstName?.[0] || 'U'}{profileData.lastName?.[0] || ''}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">

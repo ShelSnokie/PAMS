@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
     FileText,
@@ -35,7 +35,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
@@ -44,11 +44,23 @@ import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
 import { cn } from '@/lib/utils'
 
 export default function UserDashboard() {
-    const [userName] = useState('John Researcher')
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    
+    // Fallback to "User" if no name provided in URL query parameters
+    const initialName = searchParams.get('name') || 'User'
+    const [userName, setUserName] = useState(initialName)
+
+    useEffect(() => {
+        const storedName = localStorage.getItem('portal_userName')
+        if (storedName) {
+            setUserName(storedName)
+        }
+    }, [])
+
     const [selectedSearch, setSelectedSearch] = useState<any>(null)
     const [selectedRecord, setSelectedRecord] = useState<any>(null)
     const [showVisitsDialog, setShowVisitsDialog] = useState(false)
-    const router = useRouter()
 
     const handleSignOut = () => {
         document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -57,19 +69,16 @@ export default function UserDashboard() {
 
     const recentSearches = [
         { id: 1, query: 'Birth Certificate 1985', date: '2024-02-15', results: 3, details: 'Search performed in Vital Records collection. Found 3 matching certificates from 1985.' },
-        { id: 2, query: 'Property Deed Harare', date: '2024-02-14', results: 12, details: 'Property records search in Harare district. 12 deeds found matching criteria.' },
-        { id: 3, query: 'Marriage License 1990', date: '2024-02-13', results: 5, details: 'Marriage licenses from 1990. 5 records available for viewing.' },
+        { id: 2, query: 'Property Deed Harare', date: '2024-02-14', results: 12, details: 'Property records search in Harare district. 12 deeds found matching criteria.' }
     ]
 
     const savedRecords = [
         { id: 1, title: 'Birth Certificate - John Doe', type: 'Vital Records', date: '2024-02-10', status: 'Ready', details: 'Official birth certificate for John Doe, born January 15, 1985. Document verified and ready for download.', fileSize: '2.4 MB' },
-        { id: 2, title: 'Property Deed - 123 Main St', type: 'Property Records', date: '2024-02-08', status: 'Processing', details: 'Property deed for 123 Main Street, Harare. Currently being processed for digital certification.', fileSize: '1.8 MB' },
-        { id: 3, title: 'Court Filing - Case #12345', type: 'Court Records', date: '2024-02-05', status: 'Ready', details: 'Court filing documents for case #12345. Complete case history available.', fileSize: '5.2 MB' },
+        { id: 2, title: 'Property Deed - 123 Main St', type: 'Property Records', date: '2024-02-08', status: 'Processing', details: 'Property deed for 123 Main Street, Harare. Currently being processed for digital certification.', fileSize: '1.8 MB' }
     ]
 
     const upcomingBookings = [
         { id: 1, date: '2024-02-20', time: '10:00 AM', purpose: 'Research Visit', reference: 'BK-20240220-0001', location: 'Gun Hill Archives' },
-        { id: 2, date: '2024-03-05', time: '14:00 PM', purpose: 'Document Review', reference: 'BK-20240305-0002', location: 'Gun Hill Archives' },
     ]
 
     return (
@@ -88,7 +97,6 @@ export default function UserDashboard() {
                     </Link>
 
                     <div className="flex items-center gap-4">
-                        <ReportGenerator staffName={userName} department="External Researchers" role="Registered Member" />
                         <ThemeToggle />
                         <div className="text-right hidden sm:block">
                             <p className="text-sm font-medium">{userName}</p>
@@ -154,94 +162,72 @@ export default function UserDashboard() {
                     </CardContent>
                 </Card>
 
-                {/* Compact Researcher Metrics */}
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-                    <div className="flex items-center justify-between p-3 border rounded bg-muted/10">
-                        <div>
-                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Saved Records</div>
-                            <div className="text-sm font-black">{savedRecords.length}</div>
-                        </div>
-                        <Bookmark className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex items-center justify-between p-3 border rounded bg-muted/10">
-                        <div>
-                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Recent Searches</div>
-                            <div className="text-sm font-black">{recentSearches.length}</div>
-                        </div>
-                        <Search className="h-4 w-4 text-primary" />
-                    </div>
-                    <div
-                        className="flex items-center justify-between p-3 border rounded bg-muted/10 cursor-pointer hover:bg-muted/20 transition-colors"
-                        onClick={() => setShowVisitsDialog(true)}
-                    >
-                        <div>
-                            <div className="text-[10px] font-bold text-muted-foreground uppercase">Upcoming Visits</div>
-                            <div className="text-sm font-black">{upcomingBookings.length}</div>
-                        </div>
-                        <Calendar className="h-4 w-4 text-primary" />
-                    </div>
-                </div>
+
 
                 {/* Compact Actions Grid */}
                 <div className="mb-8">
                     <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Research Tools</h2>
-                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                        <DashboardCard
-                            title="Start Research"
-                            description="Explore the national archives"
-                            icon={Search}
-                            color="text-primary"
-                            href="/search"
-                        />
-                        <DashboardCard
-                            title="Request Records"
-                            description="Order certified copies"
-                            icon={FileText}
-                            color="text-primary"
-                            href="/certified-copy-requests"
-                        />
-                        <DashboardCard
-                            title="Saved Items"
-                            description="View your bookmarked records"
-                            icon={Bookmark}
-                            color="text-primary"
-                            href="/profile#saved"
-                        />
-                        <DashboardCard
-                            title="Book Visit"
-                            description="Schedule reading room time"
-                            icon={Plus}
-                            color="text-primary"
-                            href="/visit"
-                        />
-                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 h-12 px-4 shadow-sm">
+                                <div className="flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-primary" />
+                                    <span>Research Actions</span>
+                                </div>
+                                <ChevronRight className="h-4 w-4 rotate-90 text-muted-foreground" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-56">
+                            <DropdownMenuItem asChild>
+                                <Link href="/search" className="cursor-pointer flex items-center w-full py-2">
+                                    <Search className="mr-2 h-4 w-4 text-primary/70" />
+                                    <span>Start Research</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/services/request-access" className="cursor-pointer flex items-center w-full py-2">
+                                    <FileCheck className="mr-2 h-4 w-4 text-primary/70" />
+                                    <span>Apply for Access</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="/visit" className="cursor-pointer flex items-center w-full py-2">
+                                    <Calendar className="mr-2 h-4 w-4 text-primary/70" />
+                                    <span>Book Visit</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
                     {/* Recent Searches - Interactive */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                    <Card className="border-primary/20 hover:border-primary/40 transition-colors overflow-hidden">
+                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/10">
+                            <CardTitle className="flex items-center gap-2 text-primary">
                                 <Clock className="h-5 w-5" />
                                 Recent Searches
                             </CardTitle>
                             <CardDescription>Click to view search details</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-4">
                             <div className="space-y-4">
                                 {recentSearches.map((search) => (
                                     <div
                                         key={search.id}
-                                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+                                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-primary/5 hover:border-primary/30 transition-colors cursor-pointer"
                                         onClick={() => setSelectedSearch(search)}
                                     >
                                         <div className="flex-1">
-                                            <p className="font-medium text-sm">{search.query}</p>
-                                            <p className="text-xs text-muted-foreground">{search.results} results found</p>
+                                            <p className="font-medium text-sm flex items-center gap-2">
+                                                <Search className="h-3.5 w-3.5 text-primary/60" />
+                                                {search.query}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-1 ml-5.5">{search.results} results found</p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs text-muted-foreground">{search.date}</span>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{search.date}</span>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
                                                 <ChevronRight className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -252,32 +238,35 @@ export default function UserDashboard() {
                     </Card>
 
                     {/* Saved Records - Interactive */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
+                    <Card id="saved-records-card" className="border-primary/20 hover:border-primary/40 transition-colors overflow-hidden">
+                        <CardHeader className="bg-primary/5 pb-4 border-b border-primary/10">
+                            <CardTitle className="flex items-center gap-2 text-primary">
                                 <Bookmark className="h-5 w-5" />
                                 Saved Records
                             </CardTitle>
                             <CardDescription>Click to view document details</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-4">
                             <div className="space-y-4">
                                 {savedRecords.map((record) => (
                                     <div
                                         key={record.id}
-                                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors cursor-pointer"
+                                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-primary/5 hover:border-primary/30 transition-colors cursor-pointer"
                                         onClick={() => setSelectedRecord(record)}
                                     >
                                         <div className="flex-1">
-                                            <p className="font-medium text-sm">{record.title}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <Badge variant="outline" className="text-xs">{record.type}</Badge>
-                                                <Badge className={record.status === 'Ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100'}>
+                                            <p className="font-medium text-sm flex items-center gap-2">
+                                                <FileText className="h-3.5 w-3.5 text-primary/60" />
+                                                {record.title}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-1.5 ml-5.5">
+                                                <Badge variant="outline" className="text-[10px] h-5">{record.type}</Badge>
+                                                <Badge className={record.status === 'Ready' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 text-[10px] h-5' : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 text-[10px] h-5'}>
                                                     {record.status}
                                                 </Badge>
                                             </div>
                                         </div>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
                                             <ChevronRight className="h-4 w-4" />
                                         </Button>
                                     </div>

@@ -1,7 +1,7 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { FolderOpen, Search, Filter, ChevronRight, BarChart3, Database, Lock, Clock, FileCheck, CheckCircle, User, Shield, FileText, Building2, Calendar, Users, MapPin } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Search, FileCheck, User, Shield, FileText, Building2, Calendar, Users, MapPin, CheckCircle, PartyPopper } from 'lucide-react'
 import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -60,6 +61,34 @@ const featuredCollections = [
 
 export default function PublicRecordsHome() {
   const [showUserPortal, setShowUserPortal] = useState(false)
+  const [signupSuccess, setSignupSuccess] = useState(false)
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [loginEmail, setLoginEmail] = useState('')
+  const router = useRouter()
+
+  const handleLogin = () => {
+    if (loginEmail) {
+      const fallbackName = loginEmail.split('@')[0]
+      const capitalized = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1)
+      localStorage.setItem('portal_userName', capitalized)
+    }
+    setShowUserPortal(false)
+    router.push('/dashboard/user')
+  }
+
+  const handleSignup = () => {
+    const fullName = `${firstName} ${lastName}`.trim()
+    if (fullName) {
+      localStorage.setItem('portal_userName', fullName)
+    }
+    setSignupSuccess(true)
+    setTimeout(() => {
+      setSignupSuccess(false)
+      setShowUserPortal(false)
+      router.push('/dashboard/user')
+    }, 2800)
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -96,7 +125,55 @@ export default function PublicRecordsHome() {
                   <span className="sr-only">User Portal</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[425px] overflow-hidden">
+                <AnimatePresence>
+                  {signupSuccess && (
+                    <motion.div
+                      key="success-overlay"
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.05 }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm rounded-lg"
+                    >
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: [0, 1.2, 1] }}
+                        transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
+                        className="mb-4 h-20 w-20 rounded-full bg-green-100 flex items-center justify-center"
+                      >
+                        <CheckCircle className="h-10 w-10 text-green-600" />
+                      </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="text-center"
+                      >
+                        <h3 className="text-lg font-bold mb-1">Account Created!</h3>
+                        <p className="text-sm text-muted-foreground">Welcome to the National Archives portal.</p>
+                        <p className="text-xs text-muted-foreground mt-1">Redirecting to your profile…</p>
+                      </motion.div>
+                      {/* Floating particles */}
+                      {[...Array(6)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 0, x: 0, scale: 0 }}
+                          animate={{
+                            opacity: [0, 1, 0],
+                            y: [0, -60 - i * 10],
+                            x: [(i % 2 === 0 ? 1 : -1) * (20 + i * 8)],
+                            scale: [0, 1, 0],
+                          }}
+                          transition={{ duration: 1.2, delay: 0.2 + i * 0.08, ease: 'easeOut' }}
+                          className="absolute h-3 w-3 rounded-full"
+                          style={{ background: ['#22c55e','#3b82f6','#a855f7','#f59e0b','#ec4899','#06b6d4'][i] }}
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <DialogHeader>
                   <DialogTitle>User Access Portal</DialogTitle>
                   <DialogDescription>
@@ -111,25 +188,25 @@ export default function PublicRecordsHome() {
                   <TabsContent value="login" className="space-y-4 py-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" placeholder="name@example.com" />
+                      <Input id="email" type="email" placeholder="name@example.com" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
                       <Input id="password" type="password" />
                     </div>
-                    <Button className="w-full" asChild>
-                      <Link href="/dashboard/user">Login</Link>
+                    <Button className="w-full" onClick={handleLogin}>
+                      Login
                     </Button>
                   </TabsContent>
                   <TabsContent value="signup" className="space-y-4 py-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="first-name">First name</Label>
-                        <Input id="first-name" placeholder="John" />
+                        <Input id="first-name" placeholder="John" value={firstName} onChange={e => setFirstName(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="last-name">Last name</Label>
-                        <Input id="last-name" placeholder="Doe" />
+                        <Input id="last-name" placeholder="Doe" value={lastName} onChange={e => setLastName(e.target.value)} />
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -140,7 +217,7 @@ export default function PublicRecordsHome() {
                       <Label htmlFor="signup-password">Password</Label>
                       <Input id="signup-password" type="password" />
                     </div>
-                    <Button className="w-full" onClick={() => setShowUserPortal(false)}>Create Account</Button>
+                    <Button className="w-full" onClick={handleSignup}>Create Account</Button>
                   </TabsContent>
                 </Tabs>
               </DialogContent>
@@ -220,9 +297,9 @@ export default function PublicRecordsHome() {
                 Browse Record Types
               </Link>
               <span>•</span>
-              <Link href="/services" className="flex items-center gap-1 hover:text-primary transition-colors">
+              <Link href="/services/request-access" className="flex items-center gap-1 hover:text-primary transition-colors">
                 <FileCheck className="h-4 w-4" />
-                Request Certificates
+                Apply for Access to a Record or Archive Copy
               </Link>
               <span>•</span>
               <Link href="/visit" className="flex items-center gap-1 hover:text-primary transition-colors">
