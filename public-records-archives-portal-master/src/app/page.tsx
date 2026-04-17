@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, FileCheck, User, Shield, FileText, Building2, Calendar, Users, MapPin, CheckCircle, PartyPopper } from 'lucide-react'
 import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
+import { HeritageImpact } from '@/components/ui/heritage-impact'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -311,31 +312,9 @@ export default function PublicRecordsHome() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="border-y bg-muted/50">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { label: 'Record Types', value: '50+', icon: FileText },
-              { label: 'Total Records', value: '28M+', icon: Calendar },
-              { label: 'Digital Archives', value: '15M+', icon: FileCheck },
-              { label: 'Annual Requests', value: '500K+', icon: Users },
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="text-center"
-              >
-                <stat.icon className="mx-auto mb-3 h-8 w-8 text-primary" />
-                <div className="text-3xl font-bold">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Heritage Impact & Animated Scale */}
+      <HeritageImpact />
+
 
       {/* Featured Collections */}
       <section className="py-16">

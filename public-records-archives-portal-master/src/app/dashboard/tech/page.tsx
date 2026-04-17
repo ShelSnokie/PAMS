@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { AnimatedLogo } from "@/components/layout/AnimatedLogo"
 import { motion } from 'framer-motion'
 import {
   Camera,
@@ -318,10 +319,10 @@ export default function DigitizationTechnicianDashboard() {
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-            <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
-              <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="hidden sm:block">
+                            <div className="h-10 w-10 flex items-center justify-center">
+                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                            </div>
+                            <div className="hidden sm:block">
               <h1 className="font-bold text-sm leading-tight">National Archives</h1>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
             </div>

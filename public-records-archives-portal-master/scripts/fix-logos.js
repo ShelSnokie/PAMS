@@ -1,7 +1,18 @@
 const fs = require('fs');
-const glob = require('glob');
+const path = require('path');
 
-const files = glob.sync('src/app/dashboard/**/page.tsx');
+function getFiles(dir) {
+    const subdirs = fs.readdirSync(dir);
+    const files = subdirs.map((subdir) => {
+        const res = path.resolve(dir, subdir);
+        return fs.statSync(res).isDirectory() ? getFiles(res) : res;
+    });
+    return files.reduce((a, f) => a.concat(f), []);
+}
+
+const allFiles = getFiles('src/app/dashboard');
+const files = allFiles.filter(f => f.endsWith('page.tsx'));
+
 let updatedCount = 0;
 
 files.forEach(file => {
@@ -30,3 +41,4 @@ files.forEach(file => {
     }
 });
 console.log('Total updated files: ' + updatedCount);
+

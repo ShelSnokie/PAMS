@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { AnimatedLogo } from "@/components/layout/AnimatedLogo"
 import { useRouter } from 'next/navigation'
 import { UserRole } from '@/lib/auth'
 import { Skeleton } from '@/components/ui/skeleton'

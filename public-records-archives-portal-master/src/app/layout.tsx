@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   keywords: ["archive", "digital preservation", "archival management", "historical documents", "collections"],
   authors: [{ name: "National Archives of Zimbabwe Team" }],
   icons: {
-    icon: "/logo.svg",
+    icon: "/naz-coat-of-arms.png",
   },
   openGraph: {
     title: "National Archives of Zimbabwe",

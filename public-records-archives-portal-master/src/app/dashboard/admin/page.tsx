@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { AnimatedLogo } from "@/components/layout/AnimatedLogo"
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Server,
@@ -16,23 +17,20 @@ import {
   MoreHorizontal,
   FileCheck,
   Shield,
-  ChevronDown,
-  ChevronUp,
+  ChevronRight,
   Lock,
   Settings,
   ClipboardList,
+  TrendingUp,
+  BarChart3,
+  PieChart,
+  LayoutDashboard,
+  LogOut
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,27 +39,18 @@ import {
 } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
 import UserManagement from '@/components/admin/UserManagement'
+import { RoleMatrix } from '@/components/admin/RoleMatrix'
+import { SystemSettings } from '@/components/admin/SystemSettings'
+import { SecurityAuditPanel } from '@/components/admin/SecurityAuditPanel'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
-import { DashboardCard } from '@/components/dashboard/DashboardCard'
-import { ReportGenerator } from '@/components/dashboard/ReportGenerator'
-import { SecurityAuditPanel } from '@/components/admin/SecurityAuditPanel'
+import { RecordsTypeChart, RequestActivityChart, DepartmentVolumeChart } from '@/components/dashboard/AnalyticsCharts'
 import { cn } from '@/lib/utils'
 
-interface SystemStat {
-  label: string
-  value: string | number
-  icon: any
-  trend?: string
-  status?: 'healthy' | 'warning' | 'critical'
-}
-
 export default function SystemAdminDashboard() {
-  const [systemStats, setSystemStats] = useState<SystemStat[]>([])
+  const [activeTab, setActiveTab] = useState('overview')
+  const [systemStats, setSystemStats] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [securityExpanded, setSecurityExpanded] = useState(true)
-  const [kernelExpanded, setKernelExpanded] = useState(true)
-  const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setTimeout(() => {
@@ -70,363 +59,281 @@ export default function SystemAdminDashboard() {
         { label: 'CPU Usage', value: '32%', icon: Cpu, status: 'healthy' },
         { label: 'Memory Usage', value: '68%', icon: Activity, status: 'healthy' },
         { label: 'Disk Space', value: '4.2 TB / 10 TB', icon: HardDrive, status: 'warning' },
-        { label: 'Database Size', value: '1.8 TB', icon: Database, status: 'healthy' },
-        { label: 'Active Users', value: '245', icon: Users, trend: '+12 this hour' },
-        { label: 'API Requests/min', value: '3,420', icon: Activity, trend: '+5.2%' },
-        { label: 'System Uptime', value: '99.98%', icon: CheckCircle2, status: 'healthy' },
-        { label: 'Failed Logins (24h)', value: '23', icon: ShieldAlert, trend: '-3' },
       ])
       setLoading(false)
     }, 1000)
   }, [])
 
-  const securityAlerts = [
-    { id: '1', type: 'critical', title: 'High Failed Login Rate', description: 'Unusual login attempt pattern detected from IP range 192.168.x.x', time: '5 min ago' },
-    { id: '2', type: 'warning', title: 'Database Performance', description: 'Query response time above 500ms threshold', time: '15 min ago' },
-    { id: '3', type: 'info', title: 'Scheduled Maintenance', description: 'PostgreSQL maintenance scheduled for 2024-04-01 02:00 UTC', time: '2 hours ago' },
+  const menuItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'users', label: 'User Management', icon: Users, description: 'Manage access & accounts' },
+    { id: 'roles', label: 'Role Matrix', icon: Shield, description: 'Configure permission layers' },
+    { id: 'settings', label: 'System Settings', icon: Settings, description: 'Global portal tweakables' },
+    { id: 'audit', label: 'Security Audit', icon: FileCheck, description: 'Review activity trails' },
   ]
 
-  const getStatusBadge = (status?: string) => {
-    if (!status) return null
-    return (
-      <Badge className={
-        status === 'healthy' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-          status === 'warning' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' :
-            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-      }>
-        {status}
-      </Badge>
-    )
-  }
-
-  const getAlertIcon = (type: string) => {
-    return type === 'critical' ? <AlertTriangle className="h-4 w-4 text-red-600" /> :
-      type === 'warning' ? <AlertTriangle className="h-4 w-4 text-amber-600" /> :
-        <Clock className="h-4 w-4 text-blue-600" />
-  }
-
-  const handleAcknowledge = (id: string) => {
-    setAcknowledgedAlerts(prev => new Set([...prev, id]))
-  }
-
-  const unacknowledgedAlerts = securityAlerts.filter(a => !acknowledgedAlerts.has(a.id))
-  const hasUnacknowledgedIssues = unacknowledgedAlerts.some(a => a.type === 'critical' || a.type === 'warning')
-  const hasKernelIssues = systemStats.some(s => s.status === 'warning' || s.status === 'critical')
+  const securityAlerts = [
+    { id: '1', type: 'critical', title: 'High Failed Login Rate', description: 'Unusual login attempt pattern detected from IP 192.168.1.45', time: '5 min ago' },
+    { id: '2', type: 'warning', title: 'Database Response Time', description: 'Latency spike detected in vital records cluster', time: '15 min ago' },
+  ]
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-              <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
-                <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      {/* Slim Vertical Tab Bar (Far Left) */}
+      <aside className="w-20 border-r bg-card flex flex-col items-center py-8 gap-8 hidden lg:flex shrink-0">
+        <Link href="/" className="h-10 w-10 flex items-center justify-center mb-4">
+          <AnimatedLogo className="h-8 w-8 text-primary" />
+        </Link>
+        
+        <nav className="flex-1 flex flex-col gap-4">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={cn(
+                "p-3 rounded-2xl transition-all duration-300 relative group",
+                activeTab === item.id 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110" 
+                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <item.icon className="h-6 w-6" />
+              {/* Tooltip */}
+              <div className="absolute left-full ml-4 px-3 py-1 bg-foreground text-background text-[10px] font-bold rounded-lg opacity-0 -translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all z-50 whitespace-nowrap uppercase tracking-widest">
+                {item.label}
               </div>
-              <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives of Zimbabwe</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Official Records & Archives Portal</p>
-              </div>
-            </Link>
-          </div>
+              {activeTab === item.id && (
+                <motion.div 
+                  layoutId="sidebar-active" 
+                  className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" 
+                />
+              )}
+            </button>
+          ))}
+        </nav>
 
-          <div className="flex items-center gap-4">
-            <ReportGenerator staffName="Admin User" department="IT & Systems" role="Admin" />
-            <ThemeToggle />
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">Admin User</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Administrator</p>
+        <div className="mt-auto flex flex-col gap-4 items-center">
+          <ThemeToggle />
+          <Button variant="ghost" size="icon" className="rounded-full text-destructive hover:bg-destructive/10">
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
+      </aside>
+
+      {/* Secondary Sidebar (Navigation & Tools) */}
+      <aside className="w-64 border-r bg-muted/20 flex flex-col hidden lg:flex shrink-0">
+        <div className="p-6 border-b">
+          <h2 className="font-black text-xs uppercase tracking-[0.2em] text-muted-foreground opacity-50">Control Center</h2>
+          <p className="text-xl font-black mt-1 tracking-tight">System Admin</p>
+        </div>
+        
+        <div className="flex-1 p-4 space-y-1">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                activeTab === item.id 
+                  ? "bg-primary/10 text-primary font-bold" 
+                  : "text-muted-foreground/70 hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <item.icon className={cn("h-4 w-4", activeTab === item.id ? "text-primary" : "text-muted-foreground/50")} />
+              <span className="text-xs uppercase tracking-widest font-bold">{item.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="p-6 border-t">
+          <div className="bg-card rounded-2xl p-4 border shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center font-black text-primary text-xs">A</div>
+              <div>
+                <p className="text-[10px] font-black uppercase leading-none">Admin Instance</p>
+                <p className="text-[9px] text-muted-foreground font-bold mt-0.5">Primary Cluster</p>
+              </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/profile?role=admin" className="flex items-center w-full cursor-pointer">
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="text-destructive focus:text-destructive">
-                  <Link href="/api/auth/logout" className="flex items-center w-full cursor-pointer">
-                    Sign Out
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-emerald-500" 
+                initial={{ width: 0 }}
+                animate={{ width: "94%" }}
+                transition={{ duration: 1, delay: 0.5 }}
+              />
+            </div>
+            <p className="text-[7px] font-black uppercase text-emerald-600 mt-1">Uptime: 99.98%</p>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <main className="container mx-auto px-4 py-8">
-
-        {/* Compact Admin Actions Grid */}
-        <div className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">System Management Console</h2>
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-
-            {/* User Management */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <div>
-                  <DashboardCard
-                    title="User Management"
-                    description="Administer access and accounts"
-                    icon={Users}
-                    color="text-primary"
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="mb-4">
-                  <DialogTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-primary" />
-                    User Management
-                  </DialogTitle>
-                  <DialogDescription>Manage system access and update user details.</DialogDescription>
-                </DialogHeader>
-                <UserManagement />
-              </DialogContent>
-            </Dialog>
-
-            {/* Role Permissions */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <div>
-                  <DashboardCard
-                    title="Role Permissions"
-                    description="Configure access control matrix"
-                    icon={ShieldAlert}
-                    color="text-primary"
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="mb-4">
-                  <DialogTitle className="flex items-center gap-2">
-                    <ShieldAlert className="h-5 w-5 text-primary" />
-                    Role Permissions
-                  </DialogTitle>
-                  <DialogDescription>Configure granular role-based permissions.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">Role Configuration</h3>
-                    <Button><ShieldAlert className="mr-2 h-4 w-4" /> Add Role</Button>
-                  </div>
-                  <Card><CardContent className="p-12 text-center text-muted-foreground">Permission matrix viewer — coming soon</CardContent></Card>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* System Settings */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <div>
-                  <DashboardCard
-                    title="System Settings"
-                    description="Global portal configuration"
-                    icon={Settings}
-                    color="text-primary"
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="mb-4">
-                  <DialogTitle className="flex items-center gap-2">
-                    <Settings className="h-5 w-5 text-primary" />
-                    System Settings
-                  </DialogTitle>
-                  <DialogDescription>Manage global portal configurations.</DialogDescription>
-                </DialogHeader>
-                <Card><CardContent className="p-12 text-center text-muted-foreground">Settings configuration — coming soon</CardContent></Card>
-              </DialogContent>
-            </Dialog>
-
-            {/* Security Audit */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <div>
-                  <DashboardCard
-                    title="Security Audit"
-                    description="Review system activity trails"
-                    icon={ClipboardList}
-                    color="text-primary"
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="mb-4">
-                  <DialogTitle className="flex items-center gap-2">
-                    <ClipboardList className="h-5 w-5 text-primary" />
-                    Security Audit
-                  </DialogTitle>
-                  <DialogDescription>Audit and monitor employee accounts by department.</DialogDescription>
-                </DialogHeader>
-                <SecurityAuditPanel />
-              </DialogContent>
-            </Dialog>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">
+             Dashboard / <span className="text-foreground">{menuItems.find(i => i.id === activeTab)?.label}</span>
           </div>
-        </div>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[9px] font-black uppercase tracking-widest opacity-40">System Live</span>
+          </div>
+        </header>
 
-        {/* System Health — Collapsible Sections */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <main className="flex-1 overflow-y-auto p-8 space-y-8 pb-32">
+          <AnimatePresence mode="wait">
+            {activeTab === 'overview' && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-8"
+              >
+                {/* Visual Header Summary */}
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  {systemStats.map((stat) => (
+                    <Card key={stat.label} className="border-none bg-card/50 shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                      <CardContent className="p-6 relative">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                           <stat.icon className="h-12 w-12" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">{stat.label}</span>
+                          <span className="text-2xl font-black tracking-tighter">{stat.value}</span>
+                          <div className={cn(
+                             "mt-4 h-1 w-full rounded-full overflow-hidden bg-muted",
+                          )}>
+                             <motion.div 
+                                className={cn("h-full", stat.status === 'healthy' ? 'bg-primary' : 'bg-amber-500')}
+                                initial={{ width: 0 }}
+                                animate={{ width: stat.status === 'healthy' ? '40%' : '80%' }}
+                             />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
 
-          {/* Security Overwatch — collapsible */}
-          <Card className="border-muted/40 overflow-hidden">
-            <CardHeader
-              className="py-3 bg-muted/20 cursor-pointer select-none"
-              onClick={() => setSecurityExpanded(v => !v)}
-            >
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-primary" />
-                  Security Overwatch
-                  {hasUnacknowledgedIssues && (
-                    <Badge className="bg-red-100 text-red-700 text-[9px] ml-1">
-                      {unacknowledgedAlerts.filter(a => a.type !== 'info').length} issue{unacknowledgedAlerts.filter(a => a.type !== 'info').length !== 1 ? 's' : ''}
-                    </Badge>
-                  )}
-                </span>
-                {securityExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </CardTitle>
-            </CardHeader>
-            <AnimatePresence initial={false}>
-              {securityExpanded && (
-                <motion.div
-                  key="security-body"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  <CardContent className="p-0">
-                    <div className="divide-y divide-muted/40">
-                      {securityAlerts.map((alert) => {
-                        const isAcknowledged = acknowledgedAlerts.has(alert.id)
-                        const needsAction = !isAcknowledged && (alert.type === 'critical' || alert.type === 'warning')
-                        return (
-                          <motion.div
-                            key={alert.id}
-                            animate={needsAction ? {
-                              y: [0, -4, 0, -4, 0],
-                            } : { y: 0 }}
-                            transition={needsAction ? {
-                              repeat: Infinity,
-                              duration: 2,
-                              ease: 'easeInOut',
-                              repeatDelay: 1,
-                            } : {}}
-                            className={cn(
-                              "p-3 transition-colors",
-                              isAcknowledged ? 'opacity-50' : alert.type === 'critical' ? 'hover:bg-red-50/50 dark:hover:bg-red-900/10' : 'hover:bg-muted/5'
-                            )}
-                          >
-                            <div className="flex items-center justify-between gap-4">
-                              <div className="flex items-center gap-3">
-                                <div className={cn(
-                                  "h-7 w-7 rounded-full flex items-center justify-center",
-                                  alert.type === 'critical' ? 'bg-red-100 dark:bg-red-900/30' :
-                                    alert.type === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30' :
-                                      'bg-blue-100 dark:bg-blue-900/30'
-                                )}>
-                                  {getAlertIcon(alert.type)}
-                                </div>
-                                <div>
-                                  <div className="text-xs font-bold">{alert.title}</div>
-                                  <div className="text-[10px] text-muted-foreground">{alert.time} • {alert.description}</div>
-                                </div>
-                              </div>
-                              {!isAcknowledged ? (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 text-[10px] shrink-0"
-                                  onClick={() => handleAcknowledge(alert.id)}
-                                >
-                                  Acknowledge
-                                </Button>
-                              ) : (
-                                <Badge className="bg-green-100 text-green-700 text-[9px] shrink-0">Acknowledged</Badge>
-                              )}
-                            </div>
-                          </motion.div>
-                        )
-                      })}
-                    </div>
-                  </CardContent>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
+                {/* Primary Data Grids */}
+                <div className="grid gap-6 lg:grid-cols-12">
+                  <Card className="lg:col-span-8 rounded-[2rem] border shadow-xl bg-card overflow-hidden">
+                    <CardHeader className="px-8 pt-8">
+                       <div className="flex items-center justify-between">
+                          <div>
+                             <CardTitle className="text-2xl font-black tracking-tight">Infrastructure Pulse</CardTitle>
+                             <CardDescription className="text-xs uppercase font-bold tracking-widest opacity-50">Global Request & Resource Monitoring</CardDescription>
+                          </div>
+                          <div className="flex gap-2">
+                             <Badge variant="secondary" className="rounded-lg text-[8px] font-bold">LIVE</Badge>
+                             <Badge variant="outline" className="rounded-lg text-[8px] font-bold">24H</Badge>
+                          </div>
+                       </div>
+                    </CardHeader>
+                    <CardContent className="h-[400px] px-8 pb-8 pt-4">
+                       <RequestActivityChart />
+                    </CardContent>
+                  </Card>
 
-          {/* Kernel Metrics — collapsible */}
-          <Card className="border-muted/40 overflow-hidden">
-            <CardHeader
-              className="py-3 bg-muted/20 cursor-pointer select-none"
-              onClick={() => setKernelExpanded(v => !v)}
-            >
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-primary" />
-                  Kernel Metrics
-                  {!loading && hasKernelIssues && (
-                    <Badge className="bg-amber-100 text-amber-700 text-[9px] ml-1">warning</Badge>
-                  )}
-                </span>
-                {kernelExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </CardTitle>
-            </CardHeader>
-            <AnimatePresence initial={false}>
-              {kernelExpanded && (
-                <motion.div
-                  key="kernel-body"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  <CardContent className="p-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      {systemStats.slice(0, 4).map((stat) => {
-                        const hasIssue = stat.status === 'warning' || stat.status === 'critical'
-                        return (
-                          <motion.div
-                            key={stat.label}
-                            animate={hasIssue ? {
-                              y: [0, -4, 0, -4, 0],
-                            } : { y: 0 }}
-                            transition={hasIssue ? {
-                              repeat: Infinity,
-                              duration: 2,
-                              ease: 'easeInOut',
-                              repeatDelay: 1.5,
-                            } : {}}
-                            className="flex items-center justify-between p-2 border rounded bg-muted/10"
-                          >
+                  <div className="lg:col-span-4 flex flex-col gap-6">
+                    <Card className="flex-1 rounded-[2rem] border shadow-xl bg-card overflow-hidden">
+                      <CardHeader className="px-8 pt-8">
+                         <CardTitle className="text-lg font-black tracking-tight">Record Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent className="h-[250px] px-8">
+                         <RecordsTypeChart />
+                      </CardContent>
+                      <CardFooter className="px-8 pb-8 pt-0 flex flex-col items-start gap-4">
+                         <div className="w-full h-px bg-muted" />
+                         <div className="grid grid-cols-2 gap-4 w-full">
                             <div>
-                              <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
-                              <div className="text-sm font-black">{stat.value}</div>
+                               <p className="text-[8px] font-black uppercase text-muted-foreground">Highest Vol.</p>
+                               <p className="text-sm font-bold">Vital Records</p>
                             </div>
-                            {getStatusBadge(stat.status)}
-                          </motion.div>
-                        )
-                      })}
-                    </div>
-                  </CardContent>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Card>
+                            <div>
+                               <p className="text-[8px] font-black uppercase text-muted-foreground">Digital Ratio</p>
+                               <p className="text-sm font-bold">84.2%</p>
+                            </div>
+                         </div>
+                      </CardFooter>
+                    </Card>
+                  </div>
+                </div>
 
-        </div>
-      </main>
+                {/* Secondary Analytics */}
+                <Card className="rounded-[2.5rem] border shadow-xl bg-card overflow-hidden">
+                   <CardHeader className="p-8">
+                      <CardTitle className="text-xl font-black tracking-tight flex items-center gap-3">
+                         <TrendingUp className="h-6 w-6 text-emerald-500" />
+                         Department Performance Metrics
+                      </CardTitle>
+                   </CardHeader>
+                   <CardContent className="h-[300px] px-8 pb-8">
+                      <DepartmentVolumeChart />
+                   </CardContent>
+                </Card>
 
-      <AnimatedFooter />
+                {/* Alert Matrix */}
+                <section className="grid gap-6 md:grid-cols-2">
+                   {securityAlerts.map(alert => (
+                     <motion.div 
+                        key={alert.id} 
+                        whileHover={{ y: -5 }}
+                        className="p-6 rounded-3xl bg-card border shadow-lg flex gap-5 group relative overflow-hidden"
+                     >
+                        <div className={cn(
+                           "absolute top-0 left-0 w-1 h-full",
+                           alert.type === 'critical' ? 'bg-red-500' : 'bg-amber-500'
+                        )} />
+                        <div className={cn(
+                           "h-12 w-12 rounded-2xl flex items-center justify-center shrink-0",
+                           alert.type === 'critical' ? 'bg-red-50/50 text-red-600' : 'bg-amber-50/50 text-amber-600'
+                        )}>
+                           <ShieldAlert className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-1">
+                           <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-black uppercase italic tracking-widest opacity-40">{alert.time}</span>
+                              <Badge variant="outline" className={cn(
+                                 "text-[8px] border-none uppercase font-black",
+                                 alert.type === 'critical' ? 'text-red-600' : 'text-amber-600'
+                              )}>{alert.type}</Badge>
+                           </div>
+                           <p className="font-black text-lg tracking-tight leading-none mb-2 mt-1">{alert.title}</p>
+                           <p className="text-xs text-muted-foreground/80 leading-relaxed font-medium line-clamp-2">{alert.description}</p>
+                        </div>
+                     </motion.div>
+                   ))}
+                </section>
+              </motion.div>
+            )}
+
+            {activeTab === 'users' && (
+              <motion.div key="users" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
+                <UserManagement />
+              </motion.div>
+            )}
+
+            {activeTab === 'roles' && (
+              <motion.div key="roles" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
+                <RoleMatrix />
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div key="settings" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
+                <SystemSettings />
+              </motion.div>
+            )}
+
+            {activeTab === 'audit' && (
+              <motion.div key="audit" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
+                <SecurityAuditPanel />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
     </div>
   )
 }

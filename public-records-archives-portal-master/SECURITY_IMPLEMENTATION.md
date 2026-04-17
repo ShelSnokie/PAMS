@@ -65,6 +65,14 @@ Users can only obtain official copies through authorized channels:
 - Contact details for Records Office
 - Privacy Policy and Terms links
 
+### 6. Middleware-Level Hardening
+- **Rate Limiting**: Custom middleware ([middleware.ts](file:///c:/Users/Mai%20Shaen/Desktop/Projects/public-records-archives-portal-master/public-records-archives-portal-master/src/middleware.ts)) prevents brute-force and DDoS attacks on public API endpoints.
+- **Environment Isolation**: Sensitive keys (NEXTAUTH_SECRET, API_KEYS) are moved to [.env](file:///c:/Users/Mai%20Shaen/Desktop/Projects/public-records-archives-portal-master/public-records-archives-portal-master/.env) and excluded from version control.
+
+### 7. Server-Side Integrity
+- **Zod Schema Validation**: All incoming POST data is validated against strict schemas to prevent malformed or malicious data ingestion.
+- **Row Level Security (Simulated)**: Application-layer filtering ensures users only see records and requests associated with their account/email.
+
 ---
 
 ## 📁 Files Modified
@@ -283,6 +291,8 @@ Users can only obtain official copies through authorized channels:
 5. **Delivery Tracking** - Track copy requests through to delivery
 6. **Fraud Detection** - Alert system for suspicious activity
 7. **Audit Dashboard** - Enhanced for security monitoring
+8. **Digital Watermarking** - Completed (Dynamic UI protection)
+9. **API Performance Monitoring** - Integrated with analytics charts
 
 ### Scalability:
 - Add caching for record details

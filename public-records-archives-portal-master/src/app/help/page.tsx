@@ -19,7 +19,9 @@ import {
   AlertCircle,
   CheckCircle,
   MessageSquare,
-  ExternalLink
+  ExternalLink,
+  UploadCloud,
+  ArrowRight
 } from 'lucide-react'
 import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
 import { AnimatedFooter } from '@/components/layout/AnimatedFooter'
@@ -72,6 +74,14 @@ const helpCategories = [
     description: 'Requesting certified copies and official documents',
     color: 'text-purple-600',
     bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+  },
+  {
+    id: 'upload',
+    icon: UploadCloud,
+    title: 'Upload Pipeline',
+    description: 'Guidelines for submitting digital records and donations',
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50 dark:bg-rose-900/20',
   },
 ]
 
@@ -136,6 +146,12 @@ const faqs = [
     question: 'Can I access the system as a guest without an account?',
     answer: 'Yes, you can search and view public records without creating an account. However, an account is required to request certified copies, save searches, and access additional features. Creating an account is free and only takes a few minutes.',
   },
+  {
+    id: 11,
+    category: 'upload',
+    question: 'How do I submit records to the NAZ?',
+    answer: 'We have three distinct pipelines for submissions:\n\n1. Internal Staff (NAZ): Secure ingestions for official government records.\n2. Organizations: For partnering institutions and departments.\n3. Public Donations: For individual heritage donations.\n\nEach portal uses our premium high-fidelity FileUploader with support for multiple formats and progress tracking.',
+  },
 ]
 
 const quickGuides = [
@@ -156,6 +172,12 @@ const quickGuides = [
     description: 'Learn about our document protection measures',
     icon: Shield,
     steps: ['View-only document access', 'No download or print capability', 'Screenshot prevention', 'Official copy requirements', 'Audit trail for all access'],
+  },
+  {
+    title: 'Digital Submission Guide',
+    description: 'How to use the secure upload portals',
+    icon: UploadCloud,
+    steps: ['Select the appropriate portal (Internal/Org/Donor)', 'Drag and drop files into the uploader', 'Choose file classification', 'Monitor progress bars', 'Submit for approval'],
   },
 ]
 

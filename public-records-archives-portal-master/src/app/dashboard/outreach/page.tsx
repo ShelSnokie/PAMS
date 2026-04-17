@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { AnimatedLogo } from "@/components/layout/AnimatedLogo"
 import { motion } from 'framer-motion'
 import {
   Megaphone,
@@ -133,10 +134,10 @@ export default function OutreachCoordinatorDashboard() {
         <div className="container mx-auto px-4 flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-              <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
-                <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="hidden sm:block">
+                            <div className="h-10 w-10 flex items-center justify-center">
+                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                            </div>
+                            <div className="hidden sm:block">
                 <h1 className="font-bold text-sm leading-tight">National Archives</h1>
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
               </div>

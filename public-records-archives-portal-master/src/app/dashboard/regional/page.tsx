@@ -33,8 +33,8 @@ export default function RegionalDashboard() {
                 <div className="container mx-auto px-4 flex h-16 items-center justify-between">
                     <div className="flex items-center gap-6">
                         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                            <div className="h-10 w-10 flex items-center justify-center bg-primary/10 rounded-lg">
-                                <FileCheck className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+                            <div className="h-10 w-10 flex items-center justify-center">
+                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="hidden sm:block">
                                 <h1 className="font-bold text-sm leading-tight">National Archives</h1>

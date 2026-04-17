@@ -13,6 +13,7 @@ interface DashboardCardProps {
     href?: string
     onClick?: () => void
     color?: string
+    lightColor?: string
     className?: string
 }
 
@@ -23,6 +24,7 @@ export function DashboardCard({
     href,
     onClick,
     color = 'text-primary',
+    lightColor = 'bg-primary/10',
     className,
 }: DashboardCardProps) {
     const content = (
@@ -32,8 +34,8 @@ export function DashboardCard({
         )}>
             <CardContent className="p-3 flex items-center gap-3">
                 <div className={cn(
-                    "h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform",
-                    color.replace('text-', 'bg-').replace('600', '100') // Dynamic background fallback
+                    "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform",
+                    lightColor
                 )}>
                     <Icon className={cn("h-4 w-4", color)} />
                 </div>
@@ -62,3 +64,4 @@ export function DashboardCard({
         </motion.div>
     )
 }
+

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Shield, Lock, Mail, Eye, EyeOff, AlertCircle, Building2, User as UserIcon, FileCheck } from 'lucide-react'
+import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -74,20 +75,16 @@ export default function LoginPage() {
         className="w-full max-w-md mx-auto"
       >
         {/* Public Records & Archives Portal Logo & Title */}
-        <div className="mb-6 text-center flex flex-col items-center">
-          <Link href="/" className="mb-4 inline-flex flex-col items-center justify-center gap-2 group hover:opacity-80 transition-opacity">
-            <div className="h-12 w-12 flex items-center justify-center rounded-full bg-primary/10 group-hover:scale-110 transition-transform">
-              <FileCheck className="h-8 w-8 text-primary" />
+        <div className="mb-10 text-center flex flex-col items-center">
+          <Link href="/" className="mb-4 inline-flex flex-col items-center justify-center gap-4 group hover:opacity-80 transition-opacity">
+            <div className="h-16 w-16 relative flex items-center justify-center">
+              <AnimatedLogo />
             </div>
-            <div className="space-y-0.5">
-              <h1 className="text-xl font-bold tracking-tight">Public Records & Archives Portal</h1>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Official Records Access System</p>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-black tracking-tighter">Public Records & Archives Portal</h1>
+              <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground font-black opacity-60">Official Records Access System</p>
             </div>
           </Link>
-          <h2 className="text-2xl font-bold tracking-tight mb-1">Staff Access</h2>
-          <p className="text-sm text-muted-foreground mx-auto">
-            Authorized personnel only.
-          </p>
         </div>
 
         <Card className="mt-4 shadow-xl border-t-4 border-t-primary">
@@ -101,14 +98,6 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-md bg-muted/50 p-3 border border-border/50">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-[10px] text-muted-foreground leading-tight">
-                  All attempts logged. Unauthorized access prohibited.
-                </p>
-              </div>
-            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
