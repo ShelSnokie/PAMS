@@ -5,6 +5,7 @@ import { FileText, Calendar, FileCheck, Users, Globe, ShieldCheck, Database, His
 import { useRef, useState, useEffect } from 'react'
 import { AnimatedCounter } from './animated-counter'
 import { AnimatedLogo } from '@/components/layout/AnimatedLogo'
+import { cn } from '@/lib/utils'
 
 export function HeritageImpact() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -59,63 +60,105 @@ export function HeritageImpact() {
 
         {/* Impact Progress Bar (Animated Scale) */}
         <motion.div 
-          className="mt-12 p-6 md:p-8 rounded-[2.5rem] border bg-card/40 backdrop-blur-md relative overflow-hidden group shadow-xl"
-          initial={{ opacity: 0, y: 30 }}
+          className="mt-12 p-8 md:p-12 rounded-[3.5rem] border bg-card/60 backdrop-blur-xl relative overflow-hidden group shadow-2xl"
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
+          whileHover={{ y: -5, transition: { duration: 0.2 } }}
           viewport={{ once: true }}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-            <div className="flex items-center gap-5">
-              <div className="w-12 h-12 relative flex items-center justify-center">
+          {/* Subtle noise texture */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-10 mb-12">
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-16 relative flex items-center justify-center p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-inner">
                 <AnimatedLogo />
               </div>
               <div>
-                <h3 className="text-xl font-bold tracking-tight">National Digitization Roadmap</h3>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black opacity-70">Zimbabwe Vision 2030</p>
+                <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  National Digitization Roadmap
+                </h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-black opacity-60">
+                  <span className="text-primary">Heritage Integrity</span> • Zimbabwe Vision 2030 Portfolio
+                </p>
               </div>
             </div>
             <div className="flex flex-col items-end">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-black text-primary tracking-tighter">{percentage}%</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Achieved</span>
+              <div className="flex items-baseline gap-3">
+                <AnimatedCounter 
+                  value={percentage} 
+                  suffix="%" 
+                  className="text-6xl font-black text-primary p-0 bg-transparent hover:bg-transparent tracking-tighter"
+                />
+                <span className="text-[12px] font-black uppercase tracking-widest text-muted-foreground opacity-40">Achieved</span>
               </div>
-              <p className="text-[9px] text-muted-foreground uppercase font-bold mt-1">Target: {(settings.digitizationGoal / 1000000).toFixed(0)}M Records</p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-[11px] text-muted-foreground uppercase font-black tracking-tighter">
+                  Target: {(settings.digitizationGoal / 1000000).toFixed(0)}M Records
+                </p>
+              </div>
             </div>
           </div>
           
-          <div className="h-8 w-full bg-background rounded-full overflow-hidden p-2 border shadow-inner">
-            <motion.div 
-              initial={{ width: 0 }}
-              whileInView={{ width: `${percentage}%` }}
-              transition={{ duration: 2, ease: "anticipate" }}
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-primary to-emerald-800 relative shadow-lg"
-            >
-              <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.1)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.1)_50%,rgba(255,255,255,0.1)_75%,transparent_75%,transparent)] bg-[length:40px_40px] animate-[pulse_4s_infinite]" />
-            </motion.div>
+          {/* The Scale Instrument */}
+          <div className="relative mt-8">
+            <div className="h-14 w-full bg-muted/30 rounded-3xl overflow-hidden p-2.5 border-2 border-primary/10 shadow-inner backdrop-blur-sm relative">
+              {/* Scale Markers */}
+              <div className="absolute inset-x-0 bottom-0 h-full flex justify-between px-6 pointer-events-none opacity-20">
+                {[...Array(21)].map((_, i) => (
+                  <div key={i} className={cn("w-px bg-foreground", i % 5 === 0 ? "h-1/2" : "h-1/4 mt-auto mb-1")} />
+                ))}
+              </div>
+
+              <motion.div 
+                initial={{ width: 0 }}
+                whileInView={{ width: `${percentage}%` }}
+                transition={{ duration: 2.5, ease: [0.34, 1.56, 0.64, 1] }}
+                className="h-full rounded-2xl bg-gradient-to-r from-emerald-600 via-primary to-emerald-400 relative shadow-lg overflow-hidden"
+              >
+                {/* Magnetic particle effect */}
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:32px_32px] animate-[pulse_3s_infinite]" />
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-full"
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                />
+              </motion.div>
+            </div>
+
+            {/* Milestones Labeling */}
+            <div className="absolute top-16 inset-x-0 flex justify-between px-4 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-40">
+              <span>Origin</span>
+              <span>25% milestone</span>
+              <span>Strategic Half</span>
+              <span>75% Expansion</span>
+              <span>Vision 2030</span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 pt-12 border-t">
-            <div className="text-center md:text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Archived Items</p>
-              <p className="text-xl font-black">{(settings.digitizationValue / 1000000).toFixed(1)}M</p>
-            </div>
-            <div className="text-center md:text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Target Items</p>
-              <p className="text-xl font-black">{(settings.digitizationGoal / 1000000).toFixed(1)}M</p>
-            </div>
-            <div className="text-center md:text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Integrity Score</p>
-              <p className="text-xl font-black text-emerald-600 uppercase">A+ High</p>
-            </div>
-            <div className="text-center md:text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Update Pulse</p>
-              <p className="text-xl font-black flex items-center justify-center md:justify-start gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                Live
-              </p>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 pt-10 border-t border-primary/10">
+            {[
+              { label: 'Archived Items', value: `${(settings.digitizationValue / 1000000).toFixed(1)}M`, icon: FileText },
+              { label: 'Target Items', value: `${(settings.digitizationGoal / 1000000).toFixed(1)}M`, icon: Globe },
+              { label: 'Integrity Score', value: 'A+ HIGH', icon: ShieldCheck, color: 'text-emerald-500' },
+              { label: 'Status Hub', value: 'LIVE', icon: History, pulse: true },
+            ].map((stat, i) => (
+              <div key={stat.label} className="flex flex-col items-center md:items-start group/stat cursor-default">
+                <div className="flex items-center gap-2 mb-2">
+                  <stat.icon className="h-3.5 w-3.5 text-primary opacity-50 group-hover/stat:opacity-100 transition-opacity" />
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover/stat:text-primary transition-colors">{stat.label}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {stat.pulse && <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />}
+                  <p className={cn("text-2xl font-black tracking-tighter", stat.color)}>{stat.value}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
+
       </div>
     </div>
   )

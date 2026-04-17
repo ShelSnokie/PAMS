@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AnimatedLogo } from "@/components/layout/AnimatedLogo"
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -48,6 +49,7 @@ import { RecordsTypeChart, RequestActivityChart, DepartmentVolumeChart } from '@
 import { cn } from '@/lib/utils'
 
 export default function SystemAdminDashboard() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
   const [systemStats, setSystemStats] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,6 +72,7 @@ export default function SystemAdminDashboard() {
     { id: 'roles', label: 'Role Matrix', icon: Shield, description: 'Configure permission layers' },
     { id: 'settings', label: 'System Settings', icon: Settings, description: 'Global portal tweakables' },
     { id: 'audit', label: 'Security Audit', icon: FileCheck, description: 'Review activity trails' },
+    { id: 'profile', label: 'My Profile', icon: ClipboardList, description: 'Account & preferences' },
   ]
 
   const securityAlerts = [
@@ -89,7 +92,13 @@ export default function SystemAdminDashboard() {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                if (item.id === 'profile') {
+                  router.push('/account?role=admin')
+                } else {
+                  setActiveTab(item.id)
+                }
+              }}
               className={cn(
                 "p-3 rounded-2xl transition-all duration-300 relative group",
                 activeTab === item.id 
@@ -131,7 +140,13 @@ export default function SystemAdminDashboard() {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                if (item.id === 'profile') {
+                  router.push('/account?role=admin')
+                } else {
+                  setActiveTab(item.id)
+                }
+              }}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                 activeTab === item.id 

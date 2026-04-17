@@ -453,7 +453,132 @@ export default function HelpCenterPage() {
           </div>
         </section >
 
+
+        {/* Upload Pipeline Section */}
+        <section className="py-16 bg-muted/20 border-y">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-5xl mx-auto"
+            >
+              {/* Section Header */}
+              <div className="flex items-center gap-5 mb-10">
+                <div className="h-14 w-14 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600">
+                  <UploadCloud className="h-7 w-7" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-black tracking-tight">Submit Records to NAZ</h2>
+                  <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest mt-1 opacity-60">Digital ingestion pipelines — select the right portal for your organisation</p>
+                </div>
+              </div>
+
+              {/* Portal Cards */}
+              <div className="grid gap-6 md:grid-cols-3 mb-12">
+                {[
+                  {
+                    label: 'NAZ Internal',
+                    description: 'For official government departments submitting records directly to the National Archives.',
+                    icon: Shield,
+                    color: 'text-blue-600',
+                    bg: 'bg-blue-50 dark:bg-blue-900/20',
+                    border: 'border-blue-200 dark:border-blue-800',
+                    badge: 'Government Use Only',
+                    badgeColor: 'bg-blue-100 text-blue-700',
+                    href: '/upload/naz',
+                    steps: ['Authenticate with staff credentials', 'Select record classification', 'Upload documents with metadata', 'Submit for intake review']
+                  },
+                  {
+                    label: 'Organisations',
+                    description: 'For partnering institutions, museums, and departments submitting for NAZ approval and archiving.',
+                    icon: FileCheck,
+                    color: 'text-emerald-600',
+                    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                    border: 'border-emerald-200 dark:border-emerald-800',
+                    badge: 'Partners & Institutions',
+                    badgeColor: 'bg-emerald-100 text-emerald-700',
+                    href: '/upload/org',
+                    steps: ['Register your organisation', 'Prepare records for submission', 'Upload via secure portal', 'Await NAZ approval & accession']
+                  },
+                  {
+                    label: 'Public Donations',
+                    description: 'For individuals and families donating historically significant material to the national archive.',
+                    icon: MessageSquare,
+                    color: 'text-rose-600',
+                    bg: 'bg-rose-50 dark:bg-rose-900/20',
+                    border: 'border-rose-200 dark:border-rose-800',
+                    badge: 'Open to Public',
+                    badgeColor: 'bg-rose-100 text-rose-700',
+                    href: '/upload/donations',
+                    steps: ['Describe the item or collection', 'Upload digital scans or files', 'Provide provenance details', 'NAZ evaluates & acknowledges']
+                  },
+                ].map((portal, i) => (
+                  <motion.div
+                    key={portal.label}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <Card className={`h-full flex flex-col border-2 ${portal.border} hover:shadow-xl transition-all group`}>
+                      <CardHeader className="pb-3">
+                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-3 ${portal.bg} ${portal.color}`}>
+                          <portal.icon className="h-6 w-6" />
+                        </div>
+                        <div className="flex items-start justify-between gap-2">
+                          <CardTitle className="text-lg font-black">{portal.label}</CardTitle>
+                          <Badge className={`text-[8px] font-bold uppercase shrink-0 ${portal.badgeColor} border-none`}>{portal.badge}</Badge>
+                        </div>
+                        <CardDescription className="text-sm leading-relaxed">{portal.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-1">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-3">Submission Steps</p>
+                        <ol className="space-y-2">
+                          {portal.steps.map((step, si) => (
+                            <li key={si} className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                              <span className={`flex-shrink-0 h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-black text-white ${portal.color.replace('text-', 'bg-')}`}>{si + 1}</span>
+                              {step}
+                            </li>
+                          ))}
+                        </ol>
+                      </CardContent>
+                      <div className="p-6 pt-0">
+                        <Link href={portal.href}>
+                          <Button className="w-full rounded-2xl font-black uppercase tracking-widest gap-2 group-hover:gap-3 transition-all">
+                            Open {portal.label} Portal <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Supported Formats */}
+              <div className="p-6 rounded-[2rem] bg-card border shadow-sm flex flex-wrap items-center gap-6 justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Supported File Formats</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {['PDF', 'DOCX', 'TIFF', 'JPEG', 'PNG', 'MP4', 'WAV', 'ZIP'].map(f => (
+                      <Badge key={f} variant="outline" className="text-[9px] font-black uppercase">{f}</Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Max File Size</p>
+                  <p className="text-2xl font-black mt-1">500 MB <span className="text-sm font-bold text-muted-foreground/50">per file</span></p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Encryption</p>
+                  <p className="text-2xl font-black mt-1">AES-256</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* Contact Section */}
+
         < section className="py-12 bg-muted/50" >
           <div className="container mx-auto px-4">
             <motion.div

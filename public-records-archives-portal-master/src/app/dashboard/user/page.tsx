@@ -141,7 +141,13 @@ export default function UserDashboard() {
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => {
+                                if (item.id === 'settings') {
+                                    router.push('/account?role=user')
+                                } else {
+                                    setActiveTab(item.id)
+                                }
+                            }}
                             className={cn(
                                 "p-3 rounded-2xl transition-all duration-300 relative group",
                                 activeTab === item.id 
@@ -191,7 +197,13 @@ export default function UserDashboard() {
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => {
+                                if (item.id === 'settings') {
+                                    router.push('/account?role=user')
+                                } else {
+                                    setActiveTab(item.id)
+                                }
+                            }}
                             className={cn(
                                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                                 activeTab === item.id 
