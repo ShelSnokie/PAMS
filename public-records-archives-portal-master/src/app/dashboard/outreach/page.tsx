@@ -25,8 +25,11 @@ import {
   MapPin,
   ExternalLink,
   FileCheck,
-  Search
+  Search,
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -63,9 +66,17 @@ interface Exhibit {
 }
 
 export default function OutreachCoordinatorDashboard() {
+  const [activeTab, setActiveTab] = useState('exhibits')
   const [exhibits, setExhibits] = useState<Exhibit[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  const menuItems = [
+    { id: 'exhibits', label: 'Exhibits', icon: ImageIcon },
+    { id: 'events', label: 'Events', icon: Calendar },
+    { id: 'social', label: 'Social', icon: Share2 },
+    { id: 'profile', label: 'Profile', icon: ClipboardList },
+  ]
 
   const handleSignOut = () => {
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -128,32 +139,31 @@ export default function OutreachCoordinatorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                            <div className="h-10 w-10 flex items-center justify-center">
-                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
-              </div>
-            </Link>
-            <div className="h-8 w-px bg-border hidden md:block" />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-                <Megaphone className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-sm">Outreach Coordinator</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Public Engagement Console</p>
-              </div>
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      <DashboardSidebar
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (id === 'profile') {
+            router.push('/account?role=outreach')
+          } else {
+            setActiveTab(id)
+          }
+        }}
+        menuItems={menuItems}
+        onSignOut={handleSignOut}
+      />
+
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <Megaphone className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm">Outreach Coordinator</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Public Engagement console</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <ReportGenerator staffName="Dr. Amanda White" department="Public Relations" role="Outreach Coordinator" />
             <ThemeToggle />
@@ -161,32 +171,10 @@ export default function OutreachCoordinatorDashboard() {
               <p className="text-sm font-medium">Dr. Amanda White</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Engagement Lead</p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full cursor-pointer">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center w-full cursor-pointer">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
-                >
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto px-4 py-8">
+        <main className="flex-1 overflow-y-auto p-8 space-y-8 pb-20">
         {/* Compact Outreach Actions Grid */}
         <div className="mb-8">
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Public Engagement Console</h2>
@@ -219,21 +207,7 @@ export default function OutreachCoordinatorDashboard() {
         {/* Removed redundant quick actions */}
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="exhibits" className="space-y-6">
-          <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="exhibits" className="data-[state=active]:bg-background">
-              <ImageIcon className="mr-2 h-4 w-4" />
-              Virtual Exhibits
-            </TabsTrigger>
-            <TabsTrigger value="events" className="data-[state=active]:bg-background">
-              <Calendar className="mr-2 h-4 w-4" />
-              Public Events
-            </TabsTrigger>
-            <TabsTrigger value="social" className="data-[state=active]:bg-background">
-              <Share2 className="mr-2 h-4 w-4" />
-              Social Outreach
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
 
           <TabsContent value="exhibits" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
@@ -327,7 +301,7 @@ export default function OutreachCoordinatorDashboard() {
         </Tabs>
       </main>
 
-      <AnimatedFooter />
+      </div>
     </div>
   )
 }

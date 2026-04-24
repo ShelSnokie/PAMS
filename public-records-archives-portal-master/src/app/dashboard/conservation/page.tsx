@@ -18,8 +18,11 @@ import {
   TrendingUp,
   FileCheck,
   CheckCircle2,
-  Clock
+  Clock,
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -62,9 +65,19 @@ interface TreatmentLog {
 }
 
 export default function ConservationAssistantDashboard() {
+  const [activeTab, setActiveTab] = useState('overview')
   const [treatments, setTreatments] = useState<TreatmentLog[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  const menuItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'treatments', label: 'Treatments', icon: ClipboardCheck },
+    { id: 'condition', label: 'Condition', icon: FileText },
+    { id: 'environment', label: 'Environment', icon: Activity },
+    { id: 'inventory', label: 'Inventory', icon: Search },
+    { id: 'profile', label: 'Profile', icon: ClipboardList },
+  ]
 
   const handleSignOut = () => {
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -213,187 +226,136 @@ export default function ConservationAssistantDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                            <div className="h-10 w-10 flex items-center justify-center">
-                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
-              </div>
-            </Link>
-            <div className="h-8 w-px bg-border hidden md:block" />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-                <Shield className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-sm">Conservation Assistant</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Preservation Console</p>
-              </div>
+  return (
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      <DashboardSidebar
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (id === 'profile') {
+            router.push('/account?role=conservation')
+          } else {
+            setActiveTab(id)
+          }
+        }}
+        menuItems={menuItems}
+        onSignOut={handleSignOut}
+      />
+
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm">Conservation Assistant</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Preservation Console</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <ReportGenerator staffName="Sarah Williams" department="Conservation Unit" role="Conservation Assistant" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Sarah Williams</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Senior Conservator</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Specialist</p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <MoreHorizontal className="h-5 w-5" />
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-8 space-y-8 pb-20">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsContent value="overview" className="space-y-8">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex items-center justify-between p-3 border rounded-2xl bg-card shadow-sm">
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                    <div className="text-sm font-black">{stat.value}</div>
+                  </div>
+                  <stat.icon className={cn("h-4 w-4", stat.color)} />
+                </div>
+              ))}
+            </div>
+
+            {/* Environmental Monitoring */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              <Card className="rounded-[2.5rem] border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-primary" />
+                    Environmental Monitoring - Storage Unit A
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-6 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Thermometer className="h-4 w-4 text-red-600" />
+                          <span className="font-medium text-sm">Temperature</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-muted-foreground">TARGET: {environmentData.temperature.target}{environmentData.temperature.unit}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl font-black">{environmentData.temperature.current}</span>
+                        <Badge variant="outline" className="text-[8px] font-black uppercase text-green-600 border-green-200">
+                          {environmentData.temperature.status}
+                        </Badge>
+                      </div>
+                      <Progress value={100} className="h-1.5" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Droplets className="h-4 w-4 text-blue-600" />
+                          <span className="font-medium text-sm">Humidity</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-muted-foreground">TARGET: {environmentData.humidity.target}{environmentData.humidity.unit}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl font-black">{environmentData.humidity.current}</span>
+                        <Badge variant="outline" className="text-[8px] font-black uppercase text-green-600 border-green-200">
+                          {environmentData.humidity.status}
+                        </Badge>
+                      </div>
+                      <Progress value={100} className="h-1.5" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-amber-600" />
+                          <span className="font-medium text-sm">Light Exposure</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-muted-foreground">TARGET: {environmentData.lightExposure.target}{environmentData.lightExposure.unit}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-3xl font-black">{environmentData.lightExposure.current}</span>
+                        <Badge variant="outline" className="text-[8px] font-black uppercase text-green-600 border-green-200">
+                          {environmentData.lightExposure.status}
+                        </Badge>
+                      </div>
+                      <Progress value={100} className="h-1.5" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <div className="grid gap-6 lg:grid-cols-4">
+              {quickActions.map(action => (
+                <Button key={action.title} variant="outline" className="h-20 rounded-3xl flex flex-col items-center justify-center gap-1 font-black uppercase text-[9px] hover:bg-primary/5 transition-all text-center border-dashed" onClick={() => router.push(action.href)}>
+                  <action.icon className="h-5 w-5 mb-0.5 text-primary" />
+                  {action.title}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full cursor-pointer">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center w-full cursor-pointer">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
-                >
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        {/* Compact Conservation Actions Grid */}
-        <div className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Conservation Workflow Console</h2>
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <DashboardCard
-                key={action.title}
-                title={action.title}
-                description="Preservation task management"
-                icon={action.icon}
-                color="text-primary"
-                href={action.href}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
-              <div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
-                <div className="text-sm font-black">{stat.value}</div>
-              </div>
-              <stat.icon className={cn("h-4 w-4", stat.color)} />
+              ))}
             </div>
-          ))}
-        </div>
-
-        {/* Removed redundant quick actions */}
-
-        {/* Environmental Monitoring */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mb-8"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                Environmental Monitoring - Storage Unit A
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-3">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Thermometer className="h-4 w-4 text-red-600" />
-                      <span className="font-medium">Temperature</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">Target: {environmentData.temperature.target}{environmentData.temperature.unit}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold">{environmentData.temperature.current}</span>
-                    <Badge className="bg-green-100 text-green-800">
-                      {environmentData.temperature.status}
-                    </Badge>
-                  </div>
-                  <Progress value={100} className="h-2" />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Droplets className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium">Humidity</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">Target: {environmentData.humidity.target}{environmentData.humidity.unit}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold">{environmentData.humidity.current}</span>
-                    <Badge className="bg-green-100 text-green-800">
-                      {environmentData.humidity.status}
-                    </Badge>
-                  </div>
-                  <Progress value={100} className="h-2" />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-amber-600" />
-                      <span className="font-medium">Light Exposure</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">Target: {environmentData.lightExposure.target}{environmentData.lightExposure.unit}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold">{environmentData.lightExposure.current}</span>
-                    <Badge className="bg-green-100 text-green-800">
-                      {environmentData.lightExposure.status}
-                    </Badge>
-                  </div>
-                  <Progress value={100} className="h-2" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="treatments" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="treatments">
-              <ClipboardCheck className="mr-2 h-4 w-4" />
-              Treatment Logs
-            </TabsTrigger>
-            <TabsTrigger value="condition">
-              <FileText className="mr-2 h-4 w-4" />
-              Condition Reports
-            </TabsTrigger>
-            <TabsTrigger value="environment">
-              <Activity className="mr-2 h-4 w-4" />
-              Environment Monitor
-            </TabsTrigger>
-            <TabsTrigger value="inventory">
-              <Search className="mr-2 h-4 w-4" />
-              Supply Inventory
-            </TabsTrigger>
-          </TabsList>
+          </TabsContent>
 
           <TabsContent value="treatments" className="space-y-4">
             <Accordion type="single" collapsible className="w-full">
@@ -538,7 +500,7 @@ export default function ConservationAssistantDashboard() {
         </Tabs>
       </main>
 
-      <AnimatedFooter />
-    </div>
+      </div>
+    </div >
   )
 }

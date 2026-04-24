@@ -32,8 +32,11 @@ import {
   Filter,
   Crown,
   FileCheck,
-  DollarSign
+  DollarSign,
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -93,10 +96,19 @@ interface SystemAlert {
 }
 
 export default function NationalArchivistDashboard() {
+  const [activeTab, setActiveTab] = useState('overview')
   const [projects, setProjects] = useState<ArchivalProject[]>([])
   const [alerts, setAlerts] = useState<SystemAlert[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  const menuItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'projects', label: 'Initiatives', icon: Archive },
+    { id: 'budget', label: 'Financials', icon: DollarSign },
+    { id: 'staff', label: 'Regional Staff', icon: Users },
+    { id: 'profile', label: 'Profile', icon: ClipboardList },
+  ]
 
   const handleSignOut = () => {
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -203,32 +215,32 @@ export default function NationalArchivistDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                            <div className="h-10 w-10 flex items-center justify-center">
-                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
-              </div>
-            </Link>
-            <div className="h-8 w-px bg-border hidden md:block" />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-                <Crown className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-sm">National Archivist</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Executive Console</p>
-              </div>
+  return (
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      <DashboardSidebar
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (id === 'profile') {
+            router.push('/account?role=executive')
+          } else {
+            setActiveTab(id)
+          }
+        }}
+        menuItems={menuItems}
+        onSignOut={handleSignOut}
+      />
+
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <Crown className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm">National Archivist</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Executive Console</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <ReportGenerator staffName="Hon. Catherine Mbeki" department="Executive Office" role="National Archivist" />
             <ThemeToggle />
@@ -236,124 +248,77 @@ export default function NationalArchivistDashboard() {
               <p className="text-sm font-medium">Hon. Catherine Mbeki</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Chief Executive</p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full cursor-pointer">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center w-full cursor-pointer">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
-                >
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Compact Executive Actions Grid */}
-        <div className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Executive Decision Console</h2>
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <DashboardCard
-                key={action.title}
-                title={action.title}
-                description="Strategic resource access"
-                icon={action.icon}
-                color="text-primary"
-                href={action.href}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
-              <div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
-                <div className="text-sm font-black">{stat.value}</div>
-              </div>
-              <stat.icon className="h-4 w-4 text-primary" />
-            </div>
-          ))}
-        </div>
-
-        {/* Removed redundant quick actions */}
-
-        {/* System Alerts */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mb-8"
-        >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  System Notifications & Alerts
-                </CardTitle>
-                <CardDescription>Real-time status of the national archival infrastructure</CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                {alerts.map((alert) => (
-                  <div key={alert.id} className={`p-4 border rounded-lg flex gap-4 ${alert.type === 'warning' ? 'bg-amber-50/50 border-amber-200' : 'bg-blue-50/50 border-blue-200'}`}>
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${alert.type === 'warning' ? 'bg-amber-100' : 'bg-blue-100'}`}>
-                      {alert.type === 'warning' ? <AlertTriangle className="h-5 w-5 text-amber-600" /> : <Activity className="h-5 w-5 text-blue-600" />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-semibold text-sm">{alert.title}</h4>
-                        <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">{new Date(alert.timestamp).toLocaleTimeString()}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-3">{alert.description}</p>
-                      {alert.actionRequired && (
-                        <Button size="sm" variant="outline" className="h-7 text-[10px] uppercase tracking-widest font-bold">Address Alert</Button>
-                      )}
-                    </div>
+        <main className="flex-1 overflow-y-auto p-8 space-y-8 pb-20">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsContent value="overview" className="space-y-8">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex items-center justify-between p-3 border rounded-2xl bg-card shadow-sm">
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                    <div className="text-sm font-black">{stat.value}</div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+                  <stat.icon className="h-4 w-4 text-primary" />
+                </div>
+              ))}
+            </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="projects" className="space-y-6">
-          <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="projects" className="data-[state=active]:bg-background">
-              <Archive className="mr-2 h-4 w-4" />
-              Strategic Projects
-            </TabsTrigger>
-            <TabsTrigger value="budget" className="data-[state=active]:bg-background">
-              <DollarSign className="mr-2 h-4 w-4" />
-              Budget Oversight
-            </TabsTrigger>
-            <TabsTrigger value="staff" className="data-[state=active]:bg-background">
-              <Users className="mr-2 h-4 w-4" />
-              Staff Deployment
-            </TabsTrigger>
-          </TabsList>
+            {/* System Alerts */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              <Card className="rounded-[2.5rem] border shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      Strategic Notifications & Alerts
+                    </CardTitle>
+                    <CardDescription>Real-time status of national archival infrastructure</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" className="rounded-full">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {alerts.map((alert) => (
+                      <div key={alert.id} className={`p-4 border rounded-2xl flex gap-4 ${alert.type === 'warning' ? 'bg-amber-50/20 border-amber-200/50' : 'bg-blue-50/20 border-blue-200/50'}`}>
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${alert.type === 'warning' ? 'bg-amber-100/50' : 'bg-blue-100/50'}`}>
+                          {alert.type === 'warning' ? <AlertTriangle className="h-5 w-5 text-amber-600" /> : <Activity className="h-5 w-5 text-blue-600" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-bold text-sm">{alert.title}</h4>
+                            <span className="text-[10px] text-muted-foreground font-black tracking-widest uppercase">{new Date(alert.timestamp).toLocaleTimeString()}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-3">{alert.description}</p>
+                          {alert.actionRequired && (
+                            <Button size="sm" variant="outline" className="h-7 text-[9px] font-black uppercase tracking-widest rounded-full">Executive Action Required</Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <div className="grid gap-6 lg:grid-cols-4">
+               {quickActions.map(action => (
+                 <Button key={action.title} variant="outline" className="h-20 rounded-3xl flex flex-col items-center justify-center gap-1 font-black uppercase text-[9px] hover:bg-primary/5 transition-all text-center" onClick={() => router.push(action.href)}>
+                    <action.icon className="h-5 w-5 mb-0.5 text-primary" />
+                    {action.title}
+                 </Button>
+               ))}
+            </div>
+          </TabsContent>
 
           <TabsContent value="projects" className="space-y-4">
             <div className="flex items-center justify-between">
@@ -485,7 +450,7 @@ export default function NationalArchivistDashboard() {
         </Tabs>
       </main>
 
-      <AnimatedFooter />
-    </div>
+      </div>
+    </div >
   )
 }

@@ -54,6 +54,7 @@ import Link from 'next/link'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { AnimatedLogo } from "@/components/layout/AnimatedLogo"
 import { RequestActivityChart, RecordsTypeChart } from '@/components/dashboard/AnalyticsCharts'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import { cn } from '@/lib/utils'
 
 export default function UserDashboard() {
@@ -131,115 +132,20 @@ export default function UserDashboard() {
 
     return (
         <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
-            {/* Slim Vertical Tab Bar (Far Left) */}
-            <aside className="w-20 border-r bg-card flex flex-col items-center py-8 gap-8 hidden lg:flex shrink-0">
-                <Link href="/" className="h-10 w-10 flex items-center justify-center mb-4">
-                    <AnimatedLogo />
-                </Link>
-                
-                <nav className="flex-1 flex flex-col gap-4">
-                    {menuItems.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => {
-                                if (item.id === 'settings') {
-                                    router.push('/account?role=user')
-                                } else {
-                                    setActiveTab(item.id)
-                                }
-                            }}
-                            className={cn(
-                                "p-3 rounded-2xl transition-all duration-300 relative group",
-                                activeTab === item.id 
-                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110" 
-                                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                            )}
-                        >
-                            <item.icon className="h-5 w-5" />
-                            <div className="absolute left-full ml-4 px-3 py-1.5 bg-foreground text-background text-[9px] font-black rounded-lg opacity-0 -translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all z-50 whitespace-nowrap uppercase tracking-widest shadow-xl">
-                                {item.label}
-                            </div>
-                            {activeTab === item.id && (
-                                <motion.div 
-                                    layoutId="user-sidebar-active" 
-                                    className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" 
-                                />
-                            )}
-                        </button>
-                    ))}
-                </nav>
-
-                <div className="mt-auto flex flex-col gap-4 items-center">
-                    <div className="relative">
-                        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setNotifications(0)}>
-                            <Bell className="h-4 w-4" />
-                        </Button>
-                        {notifications > 0 && (
-                            <span className="absolute top-1 right-1 h-4 w-4 bg-red-500 rounded-full text-white text-[8px] font-black flex items-center justify-center">{notifications}</span>
-                        )}
-                    </div>
-                    <ThemeToggle />
-                    <Button variant="ghost" size="icon" className="rounded-full text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
-                        <LogOut className="h-4 w-4" />
-                    </Button>
-                </div>
-            </aside>
-
-            {/* Secondary Sidebar */}
-            <aside className="w-64 border-r bg-muted/20 flex flex-col hidden lg:flex shrink-0">
-                <div className="p-6 border-b">
-                    <h2 className="font-black text-[9px] uppercase tracking-[0.3em] text-muted-foreground opacity-40">Researcher Portal</h2>
-                    <p className="text-xl font-black mt-1 tracking-tight truncate">{userName}</p>
-                    <Badge className="mt-2 bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest border-none">Premium Researcher</Badge>
-                </div>
-                
-                <div className="flex-1 p-4 space-y-1">
-                    {menuItems.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => {
-                                if (item.id === 'settings') {
-                                    router.push('/account?role=user')
-                                } else {
-                                    setActiveTab(item.id)
-                                }
-                            }}
-                            className={cn(
-                                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
-                                activeTab === item.id 
-                                    ? "bg-primary/10 text-primary" 
-                                    : "text-muted-foreground/70 hover:text-foreground hover:bg-muted/50"
-                            )}
-                        >
-                            <item.icon className={cn("h-4 w-4 shrink-0", activeTab === item.id ? "text-primary" : "text-muted-foreground/40")} />
-                            <div className="text-left">
-                                <span className="text-xs uppercase tracking-widest font-black block">{item.label}</span>
-                                {item.description && (
-                                    <span className="text-[8px] uppercase tracking-wider opacity-40 font-bold">{item.description}</span>
-                                )}
-                            </div>
-                        </button>
-                    ))}
-                </div>
-
-                <div className="p-4 border-t">
-                    <div className="bg-card rounded-2xl p-4 border shadow-sm space-y-3">
-                        <p className="text-[9px] font-black uppercase text-muted-foreground opacity-50">Session Activity</p>
-                        <div className="space-y-2">
-                            {[
-                                { label: 'Searches', value: '14', color: 'bg-primary' },
-                                { label: 'Downloads', value: '3', color: 'bg-emerald-500' },
-                                { label: 'Saved', value: '7', color: 'bg-amber-400' },
-                            ].map(s => (
-                                <div key={s.label} className="flex items-center justify-between text-xs">
-                                    <span className="font-bold text-muted-foreground/60">{s.label}</span>
-                                    <Badge variant="outline" className="text-[9px] font-bold">{s.value}</Badge>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </aside>
+            <DashboardSidebar
+                activeTab={activeTab}
+                onTabChange={(id) => {
+                    if (id === 'settings') {
+                        router.push('/account?role=user')
+                    } else {
+                        setActiveTab(id)
+                    }
+                }}
+                menuItems={menuItems}
+                onSignOut={handleSignOut}
+                notifications={notifications}
+                onNotificationsClick={() => setNotifications(0)}
+            />
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
@@ -259,8 +165,24 @@ export default function UserDashboard() {
                         {activeTab === 'overview' && (
                             <motion.div key="overview" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} className="space-y-10">
                                 <div>
-                                    <h2 className="text-4xl font-black tracking-tighter">Welcome, {userName.split(' ')[0]}!</h2>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.35em] text-muted-foreground/50 mt-1">Your Central Intelligence Hub</p>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h2 className="text-4xl font-black tracking-tighter">Welcome, {userName.split(' ')[0]}!</h2>
+                                            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-muted-foreground/50 mt-1">Your Central Intelligence Hub</p>
+                                        </div>
+                                        <div className="hidden xl:flex gap-6 items-center px-8 py-3 bg-card rounded-3xl border shadow-sm">
+                                            {[
+                                                { label: 'Searches', value: '14', color: 'bg-primary' },
+                                                { label: 'Downloads', value: '3', color: 'bg-emerald-500' },
+                                                { label: 'Saved', value: '7', color: 'bg-amber-400' },
+                                            ].map(s => (
+                                                <div key={s.label} className="flex flex-col items-center">
+                                                    <span className="text-[8px] font-black uppercase text-muted-foreground opacity-40">{s.label}</span>
+                                                    <span className="text-sm font-black">{s.value}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Hero Search Card */}

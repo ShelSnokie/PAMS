@@ -18,8 +18,11 @@ import {
   CheckCircle2,
   Clock,
   Search,
-  FileCheck
+  FileCheck,
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -58,10 +61,20 @@ interface StaffMember {
 }
 
 export default function DepartmentHeadDashboard() {
+  const [activeTab, setActiveTab] = useState('overview')
   const [budget, setBudget] = useState<BudgetItem[]>([])
   const [staff, setStaff] = useState<StaffMember[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  const menuItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'staff', label: 'Staff Management', icon: Users },
+    { id: 'performance', label: 'Performance', icon: TrendingUp },
+    { id: 'projects', label: 'Projects', icon: FileText },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'profile', label: 'Profile', icon: ClipboardList },
+  ]
 
   const handleSignOut = () => {
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -127,163 +140,126 @@ export default function DepartmentHeadDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                            <div className="h-10 w-10 flex items-center justify-center">
-                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
-              </div>
-            </Link>
-            <div className="h-8 w-px bg-border hidden md:block" />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-                <Award className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-sm">Department Head</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Management Console</p>
-              </div>
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      <DashboardSidebar
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (id === 'profile') {
+            router.push('/account?role=management')
+          } else {
+            setActiveTab(id)
+          }
+        }}
+        menuItems={menuItems}
+        onSignOut={handleSignOut}
+      />
+
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <Award className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm">Department Head</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Management Console</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <ReportGenerator staffName="Dr. Emily Chen" department="Archival Services" role="Department Head" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Dr. Emily Chen</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Senior Management</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Department Head</p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full cursor-pointer">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center w-full cursor-pointer">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
-                >
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Compact Management Actions Grid */}
-        <div className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Department Management Console</h2>
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <DashboardCard
-                key={action.title}
-                title={action.title}
-                description="Manage department module"
-                icon={action.icon}
-                color="text-primary"
-                href={action.href}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
-              <div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
-                <div className="text-sm font-black">{stat.value}</div>
-              </div>
-              <stat.icon className={cn("h-4 w-4", stat.color)} />
+        <main className="flex-1 overflow-y-auto p-8 space-y-8 pb-20">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsContent value="overview" className="space-y-8">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex items-center justify-between p-3 border rounded-2xl bg-card shadow-sm">
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                    <div className="text-sm font-black">{stat.value}</div>
+                  </div>
+                  <stat.icon className={cn("h-4 w-4", stat.color)} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Removed redundant quick actions */}
-
-        {/* Budget Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="mb-8"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-primary" />
-                Budget Overview - FY2024
-              </CardTitle>
-              <CardDescription>
-                Total Budget: $4.5M | Spent: $2.6M (58%) | Remaining: $1.9M
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {budget.map((item) => (
-                  <div key={item.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium">{item.category}</span>
-                          <Badge className={getBudgetStatusColor(item.status)}>
-                            {item.status.replace(/_/g, ' ')}
-                          </Badge>
+            {/* Budget Overview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              <Card className="rounded-[2rem] border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                    Budget Overview - FY2024
+                  </CardTitle>
+                  <CardDescription>
+                    Total Budget: $4.5M | Spent: $2.6M (58%) | Remaining: $1.9M
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {budget.map((item) => (
+                      <div key={item.id} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <span className="font-medium text-sm">{item.category}</span>
+                              <Badge variant="outline" className={cn("text-[9px] uppercase font-bold", getBudgetStatusColor(item.status))}>
+                                {item.status.replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="text-right text-[10px] text-muted-foreground font-bold">
+                            {formatPercentage(item.spent, item.allocated)}% USED
+                          </div>
+                        </div>
+                        <Progress value={Number(formatPercentage(item.spent, item.allocated))} className="h-1.5" />
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                          <span>Spent: {formatCurrency(item.spent)}</span>
+                          <span>Remaining: {formatCurrency(item.remaining)}</span>
                         </div>
                       </div>
-                      <div className="text-right text-sm text-muted-foreground">
-                        {formatPercentage(item.spent, item.allocated)}% used
-                      </div>
-                    </div>
-                    <Progress value={Number(formatPercentage(item.spent, item.allocated))} className="h-2" />
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Spent: {formatCurrency(item.spent)}</span>
-                      <span>Remaining: {formatCurrency(item.remaining)}</span>
-                      <span>Allocated: {formatCurrency(item.allocated)}</span>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="staff" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="staff">
-              <Users className="mr-2 h-4 w-4" />
-              Staff Management
-            </TabsTrigger>
-            <TabsTrigger value="performance">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Performance
-            </TabsTrigger>
-            <TabsTrigger value="projects">
-              <FileText className="mr-2 h-4 w-4" />
-              Projects
-            </TabsTrigger>
-            <TabsTrigger value="reports">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Reports
-            </TabsTrigger>
-          </TabsList>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="rounded-[2.5rem] border shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                    <FileCheck className="h-4 w-4 text-primary" /> Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-3">
+                   {quickActions.map(action => (
+                     <Button key={action.title} variant="outline" className="h-16 rounded-2xl flex flex-col items-center justify-center gap-1 font-black uppercase text-[9px] hover:bg-primary/5 transition-all" onClick={() => router.push(action.href)}>
+                        <action.icon className="h-4 w-4 mb-0.5" />
+                        {action.title}
+                     </Button>
+                   ))}
+                </CardContent>
+              </Card>
+              {/* Performance Indicator Placeholder */}
+               <Card className="rounded-[2.5rem] border shadow-sm flex items-center justify-center p-8 text-center bg-primary/5 border-primary/10">
+                  <div className="space-y-2">
+                    <TrendingUp className="h-10 w-10 text-primary mx-auto opacity-20" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-primary/40">Real-time Performance analytics loading...</p>
+                  </div>
+               </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="staff" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
@@ -409,7 +385,7 @@ export default function DepartmentHeadDashboard() {
         </Tabs>
       </main>
 
-      <AnimatedFooter />
-    </div>
+      </div>
+    </div >
   )
 }

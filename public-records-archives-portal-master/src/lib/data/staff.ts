@@ -86,6 +86,20 @@ export const approveStaff = (id: string, roles: UserRole[], accessControl: Acces
     return staffMembers.find(m => m.id === id);
 };
 
+export const suspendStaff = (id: string, suspended: boolean) => {
+    staffMembers = staffMembers.map(m =>
+        m.id === id ? { ...m, status: suspended ? 'suspended' : 'active' } : m
+    );
+    return staffMembers.find(m => m.id === id);
+};
+
+export const deleteStaff = (id: string) => {
+    const exists = staffMembers.some(m => m.id === id);
+    if (!exists) return false;
+    staffMembers = staffMembers.filter(m => m.id !== id);
+    return true;
+};
+
 export const findStaffByUsername = (username: string) => {
     return staffMembers.find(m => m.username === username || m.email === username);
 };

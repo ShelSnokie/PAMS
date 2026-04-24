@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatedLogo } from "@/components/layout/AnimatedLogo"
 import { motion, AnimatePresence } from 'framer-motion'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import {
   Server,
   Users,
@@ -25,8 +26,7 @@ import {
   TrendingUp,
   BarChart3,
   PieChart,
-  LayoutDashboard,
-  LogOut
+  LayoutDashboard
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -53,6 +53,11 @@ export default function SystemAdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [systemStats, setSystemStats] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+
+  const handleSignOut = () => {
+    document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    router.push('/login')
+  }
 
   useEffect(() => {
     setTimeout(() => {
@@ -83,104 +88,20 @@ export default function SystemAdminDashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
       {/* Slim Vertical Tab Bar (Far Left) */}
-      <aside className="w-20 border-r bg-card flex flex-col items-center py-8 gap-8 hidden lg:flex shrink-0">
-        <Link href="/" className="h-10 w-10 flex items-center justify-center mb-4">
-          <AnimatedLogo className="h-8 w-8 text-primary" />
-        </Link>
-        
-        <nav className="flex-1 flex flex-col gap-4">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                if (item.id === 'profile') {
-                  router.push('/account?role=admin')
-                } else {
-                  setActiveTab(item.id)
-                }
-              }}
-              className={cn(
-                "p-3 rounded-2xl transition-all duration-300 relative group",
-                activeTab === item.id 
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110" 
-                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <item.icon className="h-6 w-6" />
-              {/* Tooltip */}
-              <div className="absolute left-full ml-4 px-3 py-1 bg-foreground text-background text-[10px] font-bold rounded-lg opacity-0 -translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 transition-all z-50 whitespace-nowrap uppercase tracking-widest">
-                {item.label}
-              </div>
-              {activeTab === item.id && (
-                <motion.div 
-                  layoutId="sidebar-active" 
-                  className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" 
-                />
-              )}
-            </button>
-          ))}
-        </nav>
+      <DashboardSidebar
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (id === 'profile') {
+            router.push('/account?role=admin')
+          } else {
+            setActiveTab(id)
+          }
+        }}
+        menuItems={menuItems}
+        onSignOut={handleSignOut}
+      />
 
-        <div className="mt-auto flex flex-col gap-4 items-center">
-          <ThemeToggle />
-          <Button variant="ghost" size="icon" className="rounded-full text-destructive hover:bg-destructive/10">
-            <LogOut className="h-5 w-5" />
-          </Button>
-        </div>
-      </aside>
 
-      {/* Secondary Sidebar (Navigation & Tools) */}
-      <aside className="w-64 border-r bg-muted/20 flex flex-col hidden lg:flex shrink-0">
-        <div className="p-6 border-b">
-          <h2 className="font-black text-xs uppercase tracking-[0.2em] text-muted-foreground opacity-50">Control Center</h2>
-          <p className="text-xl font-black mt-1 tracking-tight">System Admin</p>
-        </div>
-        
-        <div className="flex-1 p-4 space-y-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                if (item.id === 'profile') {
-                  router.push('/account?role=admin')
-                } else {
-                  setActiveTab(item.id)
-                }
-              }}
-              className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                activeTab === item.id 
-                  ? "bg-primary/10 text-primary font-bold" 
-                  : "text-muted-foreground/70 hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <item.icon className={cn("h-4 w-4", activeTab === item.id ? "text-primary" : "text-muted-foreground/50")} />
-              <span className="text-xs uppercase tracking-widest font-bold">{item.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="p-6 border-t">
-          <div className="bg-card rounded-2xl p-4 border shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center font-black text-primary text-xs">A</div>
-              <div>
-                <p className="text-[10px] font-black uppercase leading-none">Admin Instance</p>
-                <p className="text-[9px] text-muted-foreground font-bold mt-0.5">Primary Cluster</p>
-              </div>
-            </div>
-            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-emerald-500" 
-                initial={{ width: 0 }}
-                animate={{ width: "94%" }}
-                transition={{ duration: 1, delay: 0.5 }}
-              />
-            </div>
-            <p className="text-[7px] font-black uppercase text-emerald-600 mt-1">Uptime: 99.98%</p>
-          </div>
-        </div>
-      </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">

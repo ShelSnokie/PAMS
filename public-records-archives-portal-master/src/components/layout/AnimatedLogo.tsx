@@ -18,7 +18,7 @@ export function AnimatedLogo({ className = "h-8 w-8 text-primary" }: { className
                 }}
             >
                 {/* Front Side: NAZ Text */}
-                <div className="absolute inset-0 backface-hidden flex items-center justify-center bg-primary rounded-full">
+                <div className="absolute inset-0 backface-hidden flex items-center justify-center bg-black rounded-full">
                     <span className="text-white font-black text-[10px] tracking-tighter sm:text-xs">NAZ</span>
                 </div>
 
@@ -39,7 +39,7 @@ export function AnimatedLogo({ className = "h-8 w-8 text-primary" }: { className
 
                 {/* Next Front: Side: NAZ Text (at 360) */}
                 <div 
-                    className="absolute inset-0 backface-hidden flex items-center justify-center bg-primary rounded-full"
+                    className="absolute inset-0 backface-hidden flex items-center justify-center bg-black rounded-full"
                     style={{ transform: 'rotateY(360deg)' }}
                 >
                     <span className="text-white font-black text-[10px] tracking-tighter sm:text-xs">NAZ</span>

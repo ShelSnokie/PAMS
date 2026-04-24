@@ -14,6 +14,9 @@ import {
   ChevronDown,
   ChevronRight,
   Crown,
+  Trash2,
+  ShieldOff,
+  UserCheck
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DEPARTMENTS } from '@/lib/constants/departments'
 import { USER_ROLES, ROLE_DISPLAY_NAMES, ACCESS_CONTROL } from '@/lib/constants/roles'
 import { Checkbox } from '@/components/ui/checkbox'
+import { cn } from '@/lib/utils'
 
 // Admin-level roles to highlight as dept admins
 const ADMIN_ROLES = ['system_admin', 'executive', 'department_head', 'manager', 'supervisor']
@@ -139,9 +143,26 @@ export default function UserManagement() {
     employeeId: '',
     department: '',
     roles: [] as string[],
-    accessControl: ACCESS_CONTROL.RESTRICTED as string,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [verificationStates, setVerificationStates] = useState<Record<string, { roles: string[], accessControl: string }>>({})
+
+  const updateVerificationRoles = (userId: string, role: string, checked: boolean) => {
+    setVerificationStates(prev => {
+      const userState = prev[userId] || { roles: [], accessControl: ACCESS_CONTROL.RESTRICTED }
+      const updatedRoles = checked
+        ? [...userState.roles, role]
+        : userState.roles.filter(r => r !== role)
+      return { ...prev, [userId]: { ...userState, roles: updatedRoles } }
+    })
+  }
+
+  const updateVerificationAccess = (userId: string, level: string) => {
+    setVerificationStates(prev => {
+      const userState = prev[userId] || { roles: [], accessControl: ACCESS_CONTROL.RESTRICTED }
+      return { ...prev, [userId]: { ...userState, accessControl: level } }
+    })
+  }
 
   // Fetch users
   const fetchUsers = async () => {
@@ -164,7 +185,13 @@ export default function UserManagement() {
   }, [])
 
   // Handle user approval
-  const handleApprove = async (id: string, roles: string[], accessControl: string) => {
+  const handleApprove = async (id: string) => {
+    const state = verificationStates[id];
+    if (!state || state.roles.length === 0) {
+      alert('Please select at least one role');
+      return;
+    }
+
     try {
       const response = await fetch('/api/users', {
         method: 'PATCH',
@@ -173,8 +200,8 @@ export default function UserManagement() {
         },
         body: JSON.stringify({
           id,
-          roles,
-          accessControl,
+          roles: state.roles,
+          accessControl: state.accessControl,
           action: 'approve'
         }),
       })
@@ -190,6 +217,57 @@ export default function UserManagement() {
     } catch (error) {
       console.error('Error approving user:', error)
       alert('Failed to approve user')
+    }
+  }
+
+  // Handle user suspension
+  const handleToggleSuspend = async (id: string, currentlySuspended: boolean) => {
+    if (!confirm(`Are you sure you want to ${currentlySuspended ? 'reactivate' : 'suspend'} this user?`)) return;
+
+    try {
+      const response = await fetch('/api/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          action: currentlySuspended ? 'reactivate' : 'suspend'
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        fetchUsers()
+        alert(`User ${currentlySuspended ? 'reactivated' : 'suspended'} successfully!`)
+      } else {
+        alert(data.error || 'Failed to update user status')
+      }
+    } catch (error) {
+      console.error('Error updating status:', error)
+      alert('Failed to update user status')
+    }
+  }
+
+  // Handle user deletion
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to PERMANENTLY DELETE this user? This action cannot be undone.')) return;
+
+    try {
+      const response = await fetch(`/api/users?id=${id}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        fetchUsers()
+        alert('User deleted successfully!')
+      } else {
+        alert(data.error || 'Failed to delete user')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Failed to delete user')
     }
   }
 
@@ -573,15 +651,10 @@ export default function UserManagement() {
                                       <div key={key} className="flex items-center space-x-2">
                                         <Checkbox
                                           id={`verify-role-${user.id}-${value}`}
-                                          onCheckedChange={(checked) => {
-                                            const currentRoles = (window as any)[`roles_${user.id}`] || [];
-                                            const updatedRoles = checked
-                                              ? [...currentRoles, value]
-                                              : currentRoles.filter((r: string) => r !== value);
-                                            (window as any)[`roles_${user.id}`] = updatedRoles;
-                                          }}
+                                          checked={(verificationStates[user.id]?.roles || []).includes(value)}
+                                          onCheckedChange={(checked) => updateVerificationRoles(user.id, value, checked === true)}
                                         />
-                                        <label htmlFor={`verify-role-${user.id}-${value}`} className="text-xs">
+                                        <label htmlFor={`verify-role-${user.id}-${value}`} className="text-xs cursor-pointer">
                                           {ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}
                                         </label>
                                       </div>
@@ -592,10 +665,8 @@ export default function UserManagement() {
                                 <div className="space-y-2">
                                   <Label className="text-sm">Access Control Level</Label>
                                   <Select
-                                    defaultValue={ACCESS_CONTROL.RESTRICTED}
-                                    onValueChange={(value) => {
-                                      (window as any)[`access_${user.id}`] = value;
-                                    }}
+                                    value={verificationStates[user.id]?.accessControl || ACCESS_CONTROL.RESTRICTED}
+                                    onValueChange={(value) => updateVerificationAccess(user.id, value)}
                                   >
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select level" />
@@ -610,16 +681,7 @@ export default function UserManagement() {
 
                                 <Button
                                   className="w-full mt-2"
-                                  onClick={() => {
-                                    const selectedRoles = (window as any)[`roles_${user.id}`];
-                                    const selectedAccess = (window as any)[`access_${user.id}`] || ACCESS_CONTROL.RESTRICTED;
-
-                                    if (!selectedRoles || selectedRoles.length === 0) {
-                                      alert('Please select at least one role');
-                                      return;
-                                    }
-                                    handleApprove(user.id, selectedRoles, selectedAccess);
-                                  }}
+                                  onClick={() => handleApprove(user.id)}
                                 >
                                   Activate Account
                                 </Button>
@@ -628,9 +690,32 @@ export default function UserManagement() {
                           </SheetContent>
                         </Sheet>
                       ) : (
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className={cn(
+                              "h-8 w-8",
+                              user.status === 'suspended' ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" : "text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                            )}
+                            onClick={() => handleToggleSuspend(user.id, user.status === 'suspended')}
+                            title={user.status === 'suspended' ? "Reactivate User" : "Suspend User"}
+                          >
+                            {user.status === 'suspended' ? <UserCheck className="h-4 w-4" /> : <ShieldOff className="h-4 w-4" />}
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                             variant="ghost" 
+                             size="icon" 
+                             className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                             onClick={() => handleDelete(user.id)}
+                             title="Delete User"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
                     </td>
                   </tr>

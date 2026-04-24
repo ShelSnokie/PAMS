@@ -15,8 +15,11 @@ import {
   MoreHorizontal,
   Calendar,
   BookOpen,
-  FileCheck
+  FileCheck,
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -55,9 +58,19 @@ interface ResearchRequest {
 }
 
 export default function ReferenceArchivistDashboard() {
+  const [activeTab, setActiveTab] = useState('overview')
   const [requests, setRequests] = useState<ResearchRequest[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  const menuItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'requests', label: 'Requests', icon: FileText },
+    { id: 'reproductions', label: 'Reproductions', icon: Mail },
+    { id: 'reading-room', label: 'Reading Room', icon: BookOpen },
+    { id: 'researchers', label: 'Researchers', icon: Users },
+    { id: 'profile', label: 'Profile', icon: ClipboardList },
+  ]
 
   const handleSignOut = () => {
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -172,32 +185,31 @@ export default function ReferenceArchivistDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                            <div className="h-10 w-10 flex items-center justify-center">
-                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
-              </div>
-            </Link>
-            <div className="h-8 w-px bg-border hidden md:block" />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-                <Users className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-sm">Reference Archivist</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Public Services Console</p>
-              </div>
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      <DashboardSidebar
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (id === 'profile') {
+            router.push('/account?role=reference')
+          } else {
+            setActiveTab(id)
+          }
+        }}
+        menuItems={menuItems}
+        onSignOut={handleSignOut}
+      />
+
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm">Reference Archivist</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Public Services Console</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <ReportGenerator staffName="Jane Smith" department="Reference Services" role="Reference Archivist" />
             <ThemeToggle />
@@ -205,82 +217,60 @@ export default function ReferenceArchivistDashboard() {
               <p className="text-sm font-medium">Jane Smith</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Specialist</p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full cursor-pointer">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center w-full cursor-pointer">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
-                >
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Compact Reference Metrics */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex items-center justify-between p-3 border rounded bg-muted/10">
-              <div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
-                <div className="text-sm font-black">{stat.value}</div>
-              </div>
-              <stat.icon className={cn("h-4 w-4", stat.color)} />
+        <main className="flex-1 overflow-y-auto p-8 space-y-8 pb-20">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsContent value="overview" className="space-y-8">
+            {/* Compact Reference Metrics */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex items-center justify-between p-3 border rounded-2xl bg-card shadow-sm">
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">{stat.label}</div>
+                    <div className="text-sm font-black">{stat.value}</div>
+                  </div>
+                  <stat.icon className={cn("h-4 w-4", stat.color)} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Compact Reference Actions Grid */}
-        <div className="mb-8">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">Research & Public Services Console</h2>
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <DashboardCard
-                key={action.title}
-                title={action.title}
-                description="Reference queue management"
-                icon={action.icon}
-                color="text-primary"
-                href={action.href}
-              />
-            ))}
-          </div>
-        </div>
+            {/* Compact Reference Actions Grid */}
+            <Card className="rounded-[2.5rem] border shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-xs font-black uppercase tracking-widest">Researcher & Public Services Console</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                {quickActions.map((action) => (
+                  <Button key={action.title} variant="outline" className="h-16 rounded-2xl flex flex-col items-center justify-center gap-1 font-black uppercase text-[9px] hover:bg-primary/5 transition-all text-center" onClick={() => router.push(action.href)}>
+                    <action.icon className="h-4 w-4 mb-0.5 text-primary" />
+                    {action.title}
+                  </Button>
+                ))}
+              </CardContent>
+            </Card>
 
-        {/* Main Content */}
-        <Tabs defaultValue="requests" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="requests">
-              <FileText className="mr-2 h-4 w-4" />
-              Research Requests
-            </TabsTrigger>
-            <TabsTrigger value="reproductions">
-              <Mail className="mr-2 h-4 w-4" />
-              Reproductions
-            </TabsTrigger>
-            <TabsTrigger value="reading-room">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Reading Room
-            </TabsTrigger>
-            <TabsTrigger value="researchers">
-              <Users className="mr-2 h-4 w-4" />
-              Researchers
-            </TabsTrigger>
-          </TabsList>
+            <div className="grid gap-6 lg:grid-cols-3">
+              <Card className="lg:col-span-2 rounded-[2.5rem] border shadow-sm flex items-center justify-center p-12 text-center bg-primary/5 border-primary/10">
+                 <div className="space-y-3">
+                    <BookOpen className="h-12 w-12 text-primary mx-auto opacity-20" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/40">Researcher Access Hub Loading...</p>
+                 </div>
+              </Card>
+              <Card className="rounded-[2.5rem] border shadow-sm p-6 space-y-4">
+                <h3 className="font-black text-[10px] uppercase tracking-widest text-muted-foreground opacity-50">Quick Reference</h3>
+                <div className="space-y-2">
+                  {['Researcher ID Policy', 'Digital Reproduction Rates', 'Reading Room Conduct'].map(doc => (
+                    <div key={doc} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 text-[10px] font-bold cursor-pointer hover:bg-muted/50 transition-colors">
+                      <FileCheck className="h-4 w-4 text-emerald-500" />
+                      {doc}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="requests" className="space-y-4">
             <Accordion type="single" collapsible className="w-full">
@@ -408,7 +398,7 @@ export default function ReferenceArchivistDashboard() {
         </Tabs>
       </main>
 
-      <AnimatedFooter />
-    </div>
+      </div>
+    </div >
   )
 }

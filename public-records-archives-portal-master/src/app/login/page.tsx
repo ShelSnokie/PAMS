@@ -74,28 +74,17 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-auto"
       >
-        {/* Public Records & Archives Portal Logo & Title */}
-        <div className="mb-10 text-center flex flex-col items-center">
-          <Link href="/" className="mb-4 inline-flex flex-col items-center justify-center gap-4 group hover:opacity-80 transition-opacity">
-            <div className="h-16 w-16 relative flex items-center justify-center">
-              <AnimatedLogo />
-            </div>
-            <div className="space-y-1">
-              <h1 className="text-2xl font-black tracking-tighter">Public Records & Archives Portal</h1>
-              <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground font-black opacity-60">Official Records Access System</p>
-            </div>
-          </Link>
-        </div>
-
-        <Card className="mt-4 shadow-xl border-t-4 border-t-primary">
-          <CardHeader className="space-y-1 pb-4">
-            <div className="flex justify-center mb-2">
-              <Shield className="h-10 w-10 text-primary" />
-            </div>
-            <CardTitle className="text-xl text-center">Staff Authentication</CardTitle>
-            <CardDescription className="text-center text-xs">
-              Secure access for archival personnel.
-            </CardDescription>
+        <Card className="shadow-xl border-t-4 border-t-primary">
+          <CardHeader className="pb-2 flex flex-col items-center text-center">
+            <Link href="/" className="inline-flex flex-col items-center justify-center gap-3 group hover:opacity-80 transition-opacity">
+              <div className="h-16 w-16 relative flex items-center justify-center">
+                <AnimatedLogo />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-2xl font-black tracking-tighter">Public Records & Archives Portal</h1>
+                <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground font-black opacity-60">Staff Log In</p>
+              </div>
+            </Link>
           </CardHeader>
           <CardContent className="space-y-4">
 

@@ -50,9 +50,8 @@ function AccountContent() {
 
     const navSections = [
         { id: 'overview', label: 'Overview', icon: User },
-        { id: 'activity', label: 'Activity', icon: Activity },
+        ...(role !== 'admin' ? [{ id: 'activity', label: 'Activity', icon: Activity }] : []),
         { id: 'security', label: 'Security', icon: Shield },
-        { id: 'notifications', label: 'Notifications', icon: Bell },
     ]
 
     const recentActivity = [
@@ -114,18 +113,6 @@ function AccountContent() {
                                 </div>
                                 <p className="font-black text-lg">{userName}</p>
                                 <Badge className={cn("mt-2 text-[8px] font-black uppercase border-none", cfg.color)}>{cfg.label}</Badge>
-                                <div className="grid grid-cols-3 gap-2 mt-5 pt-5 border-t">
-                                    {[
-                                        { label: 'Requests', value: '7' },
-                                        { label: 'Saved', value: '12' },
-                                        { label: 'Visits', value: '3' },
-                                    ].map(s => (
-                                        <div key={s.label} className="text-center">
-                                            <p className="font-black text-lg">{s.value}</p>
-                                            <p className="text-[8px] uppercase font-black text-muted-foreground opacity-50">{s.label}</p>
-                                        </div>
-                                    ))}
-                                </div>
                             </CardContent>
                         </Card>
 
@@ -147,6 +134,22 @@ function AccountContent() {
                                         <span className="text-xs font-black uppercase tracking-widest">{s.label}</span>
                                     </button>
                                 ))}
+                                {/* Notifications — dedicated icon button */}
+                                <button
+                                    onClick={() => setActiveSection('notifications')}
+                                    className={cn(
+                                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left mt-1 border-t pt-3",
+                                        activeSection === 'notifications'
+                                            ? "bg-primary/10 text-primary font-black"
+                                            : "text-muted-foreground/70 hover:text-foreground hover:bg-muted/50"
+                                    )}
+                                >
+                                    <div className="relative">
+                                        <Bell className={cn("h-4 w-4 shrink-0", activeSection === 'notifications' ? "text-primary" : "text-muted-foreground/40")} />
+                                        <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-widest">Notifications</span>
+                                </button>
                             </CardContent>
                         </Card>
                     </aside>
@@ -179,10 +182,23 @@ function AccountContent() {
                                                         </div>
                                                     </div>
                                                 ))}
-                                                <div className="space-y-2 md:col-span-2">
-                                                    <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground opacity-60">Bio</Label>
-                                                    <Textarea defaultValue="Heritage researcher with a focus on colonial-era land records and civil registry." className="rounded-xl font-bold resize-none" rows={3} />
-                                                </div>
+                                                {role === 'admin' ? (
+                                                    <>
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground opacity-60">Department</Label>
+                                                            <Input defaultValue="Information Technology & Systems" className="rounded-xl font-bold" />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground opacity-60">Access Level</Label>
+                                                            <Input defaultValue="System Administrator — Full Access" readOnly className="rounded-xl font-bold bg-muted/30 cursor-not-allowed" />
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground opacity-60">Bio</Label>
+                                                        <Textarea defaultValue="Heritage researcher with a focus on colonial-era land records and civil registry." className="rounded-xl font-bold resize-none" rows={3} />
+                                                    </div>
+                                                )}
                                             </div>
                                             <Button onClick={handleSave} className="w-full rounded-2xl font-black uppercase tracking-widest gap-2">
                                                 <Save className="h-4 w-4" /> Save Changes
@@ -192,8 +208,8 @@ function AccountContent() {
                                 </motion.div>
                             )}
 
-                            {/* ── ACTIVITY ── */}
-                            {activeSection === 'activity' && (
+                            {/* ── ACTIVITY (non-admin only) ── */}
+                            {activeSection === 'activity' && role !== 'admin' && (
                                 <motion.div key="activity" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
                                     <Card className="rounded-[2rem] border">
                                         <CardHeader className="p-8 border-b bg-muted/20">
@@ -272,13 +288,19 @@ function AccountContent() {
                                             <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2"><Bell className="h-4 w-4 text-primary" />Notification Preferences</CardTitle>
                                         </CardHeader>
                                         <CardContent className="p-8 space-y-6">
-                                            {[
+                                            {(role === 'admin' ? [
+                                                { label: 'Security Alerts', desc: 'Notify on critical login failures and access anomalies', defaultOn: true },
+                                                { label: 'User Registration Requests', desc: 'Alert when new staff accounts await verification', defaultOn: true },
+                                                { label: 'Audit Report Summaries', desc: 'Weekly digest of security audit events', defaultOn: true },
+                                                { label: 'System Health Events', desc: 'Disk, CPU and uptime threshold breaches', defaultOn: true },
+                                                { label: 'System Announcements', desc: 'Maintenance windows and portal news', defaultOn: true },
+                                            ] : [
                                                 { label: 'Email Notifications', desc: 'Receive updates on request status changes', defaultOn: true },
                                                 { label: 'Search Alerts', desc: 'Notify me when new records match my saved searches', defaultOn: false },
                                                 { label: 'Visit Reminders', desc: 'Calendar reminders for reading room bookings', defaultOn: true },
                                                 { label: 'Newsletter', desc: 'Monthly updates from the National Archives', defaultOn: false },
                                                 { label: 'System Announcements', desc: 'Maintenance windows and portal news', defaultOn: true },
-                                            ].map(s => (
+                                            ]).map(s => (
                                                 <div key={s.label} className="flex items-center justify-between border-b last:border-0 pb-5 last:pb-0">
                                                     <div>
                                                         <p className="font-black text-sm">{s.label}</p>

@@ -26,8 +26,11 @@ import {
   AlertTriangle,
   FileCheck,
   Edit,
-  Share2
+  Share2,
+  LayoutDashboard,
+  ClipboardList
 } from 'lucide-react'
+import { DashboardSidebar } from '@/components/layout/DashboardSidebar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -86,11 +89,19 @@ interface ResearchProject {
 }
 
 export default function SubjectSpecialistDashboard() {
+  const [activeTab, setActiveTab] = useState('collections')
   const [collections, setCollections] = useState<CuratedCollection[]>([])
   const [preservationTasks, setPreservationTasks] = useState<DigitalPreservationTask[]>([])
   const [projects, setProjects] = useState<ResearchProject[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  const menuItems = [
+    { id: 'collections', label: 'Collections', icon: Archive },
+    { id: 'preservation', label: 'Preservation', icon: CheckCircle2 },
+    { id: 'research', label: 'Research', icon: BookOpen },
+    { id: 'profile', label: 'Profile', icon: ClipboardList },
+  ]
 
   const handleSignOut = () => {
     document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
@@ -281,69 +292,42 @@ export default function SubjectSpecialistDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
-                            <div className="h-10 w-10 flex items-center justify-center">
-                                <AnimatedLogo className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="hidden sm:block">
-                <h1 className="font-bold text-sm leading-tight">National Archives</h1>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Zimbabwe Portal</p>
-              </div>
-            </Link>
-            <div className="h-8 w-px bg-border hidden md:block" />
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-                <Star className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-sm">Subject Specialist</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Curation Console</p>
-              </div>
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      <DashboardSidebar
+        activeTab={activeTab}
+        onTabChange={(id) => {
+          if (id === 'profile') {
+            router.push('/account?role=specialist')
+          } else {
+            setActiveTab(id)
+          }
+        }}
+        menuItems={menuItems}
+        onSignOut={handleSignOut}
+      />
+
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
+              <Star className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-bold text-sm">Subject Specialist</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Curation Lead</p>
             </div>
           </div>
-
           <div className="flex items-center gap-4">
             <ReportGenerator staffName="Dr. Marcus Johnson" department="Collections Development" role="Subject Specialist" />
             <ThemeToggle />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium">Dr. Marcus Johnson</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Specialist</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">Curation Console</p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 transition-colors">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full cursor-pointer">
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center w-full cursor-pointer">
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
-                >
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container mx-auto px-4 py-8">
+        <main className="flex-1 overflow-y-auto p-8 space-y-8 pb-20">
         {/* Compact Specialist Metrics */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {stats.map((stat) => (
@@ -375,21 +359,7 @@ export default function SubjectSpecialistDashboard() {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="collections" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="collections">
-              <Archive className="mr-2 h-4 w-4" />
-              Curated Collections
-            </TabsTrigger>
-            <TabsTrigger value="preservation">
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Digital Preservation
-            </TabsTrigger>
-            <TabsTrigger value="research">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Research Projects
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
 
           <TabsContent value="collections" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
@@ -638,7 +608,7 @@ export default function SubjectSpecialistDashboard() {
         </Tabs>
       </main>
 
-      <AnimatedFooter />
+      </div>
     </div >
   )
 }

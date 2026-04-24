@@ -61,16 +61,50 @@ const PURPOSES = [
 
 export default function RequestAccessPage() {
   const [submitted, setSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        nationalId: '',
+        dateOfBirth: '',
+        email: '',
+        phone: '',
+        postalAddress: '',
+        recordType: '',
+        recordDescription: '',
+        dateFrom: '',
+        dateTo: '',
+        accessType: '',
+        purpose: '',
+        purposeDetail: ''
+    })
+    const [error, setError] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setSubmitted(true)
-    }, 1400)
-  }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsSubmitting(true)
+        setError('')
+
+        try {
+            const response = await fetch('/api/services/request-access', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                setSubmitted(true)
+            } else {
+                setError(data.error || 'Failed to submit application')
+            }
+        } catch (err) {
+            setError('Connection error. Please try again later.')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
 
   if (submitted) {
     return (
@@ -192,52 +226,88 @@ export default function RequestAccessPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
-                    <Input id="firstName" placeholder="e.g. Tendai" required />
+                    <Input 
+                      id="firstName" 
+                      placeholder="e.g. Tendai" 
+                      required 
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="lastName">Surname <span className="text-destructive">*</span></Label>
-                    <Input id="lastName" placeholder="e.g. Moyo" required />
+                    <Input 
+                      id="lastName" 
+                      placeholder="e.g. Moyo" 
+                      required 
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="nationalId" className="flex items-center gap-1.5">
-                      <Hash className="h-3.5 w-3.5" />
-                      National ID / Passport No. <span className="text-destructive">*</span>
-                    </Label>
-                    <Input id="nationalId" placeholder="e.g. 63-123456A-70" required />
+                    <Input 
+                      id="nationalId" 
+                      placeholder="e.g. 63-123456A-70" 
+                      required 
+                      value={formData.nationalId}
+                      onChange={(e) => setFormData({...formData, nationalId: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="dob" className="flex items-center gap-1.5">
                       <Calendar className="h-3.5 w-3.5" />
                       Date of Birth <span className="text-destructive">*</span>
                     </Label>
-                    <Input id="dob" type="date" required />
+                    <Input 
+                      id="dob" 
+                      type="date" 
+                      required 
+                      value={formData.dateOfBirth}
+                      onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="email" className="flex items-center gap-1.5">
-                      <Mail className="h-3.5 w-3.5" />
-                      Email Address <span className="text-destructive">*</span>
-                    </Label>
-                    <Input id="email" type="email" placeholder="name@example.com" required />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="name@example.com" 
+                      required 
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="phone" className="flex items-center gap-1.5">
                       <Phone className="h-3.5 w-3.5" />
                       Phone Number <span className="text-destructive">*</span>
                     </Label>
-                    <Input id="phone" type="tel" placeholder="+263 77 123 4567" required />
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+263 77 123 4567" 
+                      required 
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="postalAddress">Postal Address <span className="text-destructive">*</span></Label>
-                  <Textarea id="postalAddress" placeholder="P.O. Box / Street address, City, Province" rows={2} required />
+                  <Textarea 
+                    id="postalAddress" 
+                    placeholder="P.O. Box / Street address, City, Province" 
+                    rows={2} 
+                    required 
+                    value={formData.postalAddress}
+                    onChange={(e) => setFormData({...formData, postalAddress: e.target.value})}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -254,7 +324,10 @@ export default function RequestAccessPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="recordType">Type of Record <span className="text-destructive">*</span></Label>
-                  <Select required>
+                  <Select 
+                    required 
+                    onValueChange={(val) => setFormData({...formData, recordType: val})}
+                  >
                     <SelectTrigger id="recordType">
                       <SelectValue placeholder="Select record type…" />
                     </SelectTrigger>
@@ -273,23 +346,38 @@ export default function RequestAccessPage() {
                     placeholder="Provide as much detail as possible: names, dates, reference numbers, locations, etc."
                     rows={4}
                     required
+                    value={formData.recordDescription}
+                    onChange={(e) => setFormData({...formData, recordDescription: e.target.value})}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="dateFrom">Date Range — From</Label>
-                    <Input id="dateFrom" type="date" />
+                    <Input 
+                      id="dateFrom" 
+                      type="date" 
+                      value={formData.dateFrom}
+                      onChange={(e) => setFormData({...formData, dateFrom: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="dateTo">Date Range — To</Label>
-                    <Input id="dateTo" type="date" />
+                    <Input 
+                      id="dateTo" 
+                      type="date" 
+                      value={formData.dateTo}
+                      onChange={(e) => setFormData({...formData, dateTo: e.target.value})}
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="copyType">Type of Access Required <span className="text-destructive">*</span></Label>
-                  <Select required>
+                  <Select 
+                    required 
+                    onValueChange={(val) => setFormData({...formData, accessType: val})}
+                  >
                     <SelectTrigger id="copyType">
                       <SelectValue placeholder="Select type…" />
                     </SelectTrigger>
@@ -315,7 +403,10 @@ export default function RequestAccessPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="purpose">Primary Purpose <span className="text-destructive">*</span></Label>
-                  <Select required>
+                  <Select 
+                    required 
+                    onValueChange={(val) => setFormData({...formData, purpose: val})}
+                  >
                     <SelectTrigger id="purpose">
                       <SelectValue placeholder="Select purpose…" />
                     </SelectTrigger>
@@ -330,6 +421,8 @@ export default function RequestAccessPage() {
                     id="purposeDetail"
                     placeholder="Briefly explain how you intend to use this record…"
                     rows={3}
+                    value={formData.purposeDetail}
+                    onChange={(e) => setFormData({...formData, purposeDetail: e.target.value})}
                   />
                 </div>
               </CardContent>
@@ -355,6 +448,13 @@ export default function RequestAccessPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-4 rounded-lg bg-destructive/10 text-destructive text-sm font-medium border border-destructive/20 mb-6">
+                {error}
+              </div>
+            )}
 
             {/* Declaration */}
             <Card className="border-primary/20 bg-primary/5">
