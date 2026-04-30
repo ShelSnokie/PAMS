@@ -16,8 +16,7 @@ model User {
   email         String    @unique
   fullName      String
   password      String
-  role          String    @default("PUBLIC")
-  department    String    @default("General")
+  role          String    @default("EMPLOYEE") // SUPER_ADMIN, EMPLOYEE, PUBLIC
   status        String    @default("active")
   employeeId    String?   @unique
   accessControl String    @default("RESTRICTED")
@@ -37,11 +36,12 @@ model Record {
   description String?
   referenceNo String   @unique
   type        String   // e.g., "DOC", "IMAGE", "VIDEO"
+  category    String   // Dynamic category (free-text)
   status      String   @default("pending") // pending, approved, rejected, archived
-  dateCreated DateTime @default(now())
+  recordDate  DateTime @default(now()) // The date of the record itself
+  dateCreated DateTime @default(now()) // Upload date
   dateModified DateTime @updatedAt
   
-  department  String
   collectionId String?
   collection  Collection? @relation(fields: [collectionId], references: [id])
   

@@ -43,9 +43,11 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (data.success) {
-        // Set cookie for role-based routing (comma-separated for multi-roles)
-        const roles = data.user.roles.join(',')
-        document.cookie = `user_role=${roles}; path=/; max-age=3600; SameSite=Lax`
+        // Set cookie for role-based routing
+        document.cookie = `user_role=${data.user.role}; path=/; max-age=3600; SameSite=Lax`
+        
+        // Store user data for dashboard state
+        localStorage.setItem('user', JSON.stringify(data.user))
 
         window.location.href = data.dashboardUrl || '/'
       } else {
@@ -162,31 +164,23 @@ export default function LoginPage() {
             </form>
 
             <div className="pt-4 border-t">
-              <p className="text-[10px] font-bold text-center uppercase tracking-widest text-muted-foreground mb-3">Quick Login (Demo)</p>
-              <div className="grid grid-cols-3 gap-2">
+              <p className="text-[10px] font-bold text-center uppercase tracking-widest text-muted-foreground mb-3">Quick Access (Portal Access)</p>
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-[10px] h-7 px-1"
+                  className="text-[10px] h-7"
                   onClick={() => fillCredentials('admin', 'admin123')}
                 >
-                  Admin
+                  Super Admin
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-[10px] h-7 px-1"
-                  onClick={() => fillCredentials('archivist', 'arch123')}
+                  className="text-[10px] h-7"
+                  onClick={() => fillCredentials('employee', 'employee123')}
                 >
-                  Archivist
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-[10px] h-7 px-1"
-                  onClick={() => fillCredentials('researcher', 'res123')}
-                >
-                  Researcher
+                  Employee
                 </Button>
               </div>
             </div>

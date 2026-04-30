@@ -11,13 +11,18 @@ export async function POST(req: NextRequest) {
         const title = formData.get('title') as string
         const description = formData.get('description') as string
         const referenceNo = formData.get('referenceNo') as string
-        const department = formData.get('department') as string
-        const collectionId = formData.get('collectionId') as string
-        const type = formData.get('type') as string
+        const category = formData.get('category') as string // Free-text
+        const type = formData.get('type') as string // File type
+        const tags = formData.get('tags') as string // JSON string or comma-separated
+        const recordDateStr = formData.get('recordDate') as string
         const createdBy = formData.get('createdBy') as string // User ID
 
         if (!file) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
+        }
+
+        if (!title || !category || !createdBy) {
+            return NextResponse.json({ error: 'Missing mandatory metadata (title, category, or creator)' }, { status: 400 })
         }
 
         // Validate creator exists
@@ -52,11 +57,12 @@ export async function POST(req: NextRequest) {
                 description,
                 referenceNo: referenceNo || `REF-${uuidv4().slice(0, 8)}`,
                 type: type || 'DOC',
-                department,
-                collectionId: collectionId || null,
+                category,
+                recordDate: recordDateStr ? new Date(recordDateStr) : new Date(),
                 createdBy,
                 fileUrl,
-                status: 'approved', // Auto-approving for now as it's staff upload
+                tags: tags || '[]',
+                status: 'approved', // Auto-approving for now
             },
         })
 
@@ -66,7 +72,7 @@ export async function POST(req: NextRequest) {
                 userId: createdBy,
                 action: 'UPLOAD_RECORD',
                 resource: `Record:${record.id}`,
-                details: JSON.stringify({ title, referenceNo, fileUrl }),
+                details: JSON.stringify({ title, referenceNo, category, fileUrl }),
             },
         })
 

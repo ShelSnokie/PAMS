@@ -51,43 +51,56 @@ import { cn } from '@/lib/utils'
 export default function SystemAdminDashboard() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
+  const [stats, setStats] = useState<any>(null)
   const [systemStats, setSystemStats] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   const handleSignOut = () => {
-    document.cookie = 'user_role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    localStorage.removeItem('user')
     router.push('/login')
   }
 
-  useEffect(() => {
-    setTimeout(() => {
-      setSystemStats([
-        { label: 'Server Status', value: 'Online', icon: Server, status: 'healthy' },
-        { label: 'CPU Usage', value: '32%', icon: Cpu, status: 'healthy' },
-        { label: 'Memory Usage', value: '68%', icon: Activity, status: 'healthy' },
-        { label: 'Disk Space', value: '4.2 TB / 10 TB', icon: HardDrive, status: 'warning' },
-      ])
+  const fetchStats = async () => {
+    try {
+      const res = await fetch('/api/admin/stats')
+      const data = await res.json()
+      if (data.systemStats) {
+        setStats(data)
+        // Enrich the stats with icons
+        const icons = [Server, Users, ShieldAlert, CheckCircle2]
+        setSystemStats(data.systemStats.map((s: any, i: number) => ({
+          ...s,
+          icon: icons[i % icons.length]
+        })))
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin stats')
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
+  }
+
+  useEffect(() => {
+    fetchStats()
+    const interval = setInterval(fetchStats, 30000) // Refresh every 30s
+    return () => clearInterval(interval)
   }, [])
 
   const menuItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'users', label: 'User Management', icon: Users, description: 'Manage access & accounts' },
-    { id: 'roles', label: 'Role Matrix', icon: Shield, description: 'Configure permission layers' },
-    { id: 'settings', label: 'System Settings', icon: Settings, description: 'Global portal tweakables' },
+    { id: 'overview', label: 'Portal Pulse', icon: LayoutDashboard },
+    { id: 'users', label: 'Staff Management', icon: Users, description: 'Manage access & accounts' },
     { id: 'audit', label: 'Security Audit', icon: FileCheck, description: 'Review activity trails' },
-    { id: 'profile', label: 'My Profile', icon: ClipboardList, description: 'Account & preferences' },
+    { id: 'settings', label: 'Portal Settings', icon: Settings, description: 'Global portal tweakables' },
+    { id: 'profile', label: 'My Account', icon: ClipboardList, description: 'Account & preferences' },
   ]
 
   const securityAlerts = [
-    { id: '1', type: 'critical', title: 'High Failed Login Rate', description: 'Unusual login attempt pattern detected from IP 192.168.1.45', time: '5 min ago' },
-    { id: '2', type: 'warning', title: 'Database Response Time', description: 'Latency spike detected in vital records cluster', time: '15 min ago' },
+    { id: '1', type: 'critical', title: 'Accountability Threshold', description: 'Large batch upload detected without metadata completion.', time: 'Just now' },
+    { id: '2', type: 'warning', title: 'System Growth', description: `Total records have reached ${stats?.totalRecords || 0}. Consider indexing optimization.`, time: '15 min ago' },
   ]
 
   return (
     <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
-      {/* Slim Vertical Tab Bar (Far Left) */}
       <DashboardSidebar
         activeTab={activeTab}
         onTabChange={(id) => {
@@ -101,17 +114,14 @@ export default function SystemAdminDashboard() {
         onSignOut={handleSignOut}
       />
 
-
-
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-16 border-b bg-background/50 backdrop-blur-md flex items-center justify-between px-8 shrink-0">
           <div className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">
-             Dashboard / <span className="text-foreground">{menuItems.find(i => i.id === activeTab)?.label}</span>
+             Central Control / <span className="text-foreground">{menuItems.find(i => i.id === activeTab)?.label}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-widest opacity-40">System Live</span>
+            <span className="text-[9px] font-black uppercase tracking-widest opacity-40">System Real-time Feed</span>
           </div>
         </header>
 
@@ -125,7 +135,6 @@ export default function SystemAdminDashboard() {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-8"
               >
-                {/* Visual Header Summary */}
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                   {systemStats.map((stat) => (
                     <Card key={stat.label} className="border-none bg-card/50 shadow-sm hover:shadow-md transition-all group overflow-hidden">
@@ -142,7 +151,7 @@ export default function SystemAdminDashboard() {
                              <motion.div 
                                 className={cn("h-full", stat.status === 'healthy' ? 'bg-primary' : 'bg-amber-500')}
                                 initial={{ width: 0 }}
-                                animate={{ width: stat.status === 'healthy' ? '40%' : '80%' }}
+                                animate={{ width: '60%' }}
                              />
                           </div>
                         </div>
@@ -151,18 +160,13 @@ export default function SystemAdminDashboard() {
                   ))}
                 </div>
 
-                {/* Primary Data Grids */}
                 <div className="grid gap-6 lg:grid-cols-12">
                   <Card className="lg:col-span-8 rounded-[2rem] border shadow-xl bg-card overflow-hidden">
                     <CardHeader className="px-8 pt-8">
                        <div className="flex items-center justify-between">
                           <div>
-                             <CardTitle className="text-2xl font-black tracking-tight">Infrastructure Pulse</CardTitle>
-                             <CardDescription className="text-xs uppercase font-bold tracking-widest opacity-50">Global Request & Resource Monitoring</CardDescription>
-                          </div>
-                          <div className="flex gap-2">
-                             <Badge variant="secondary" className="rounded-lg text-[8px] font-bold">LIVE</Badge>
-                             <Badge variant="outline" className="rounded-lg text-[8px] font-bold">24H</Badge>
+                             <CardTitle className="text-2xl font-black tracking-tight">Archival Velocity</CardTitle>
+                             <CardDescription className="text-xs uppercase font-bold tracking-widest opacity-50">Global intake activity monitor</CardDescription>
                           </div>
                        </div>
                     </CardHeader>
@@ -174,21 +178,19 @@ export default function SystemAdminDashboard() {
                   <div className="lg:col-span-4 flex flex-col gap-6">
                     <Card className="flex-1 rounded-[2rem] border shadow-xl bg-card overflow-hidden">
                       <CardHeader className="px-8 pt-8">
-                         <CardTitle className="text-lg font-black tracking-tight">Record Distribution</CardTitle>
+                         <CardTitle className="text-lg font-black tracking-tight">Top Categories</CardTitle>
                       </CardHeader>
                       <CardContent className="h-[250px] px-8">
                          <RecordsTypeChart />
                       </CardContent>
                       <CardFooter className="px-8 pb-8 pt-0 flex flex-col items-start gap-4">
                          <div className="w-full h-px bg-muted" />
-                         <div className="grid grid-cols-2 gap-4 w-full">
-                            <div>
-                               <p className="text-[8px] font-black uppercase text-muted-foreground">Highest Vol.</p>
-                               <p className="text-sm font-bold">Vital Records</p>
-                            </div>
-                            <div>
-                               <p className="text-[8px] font-black uppercase text-muted-foreground">Digital Ratio</p>
-                               <p className="text-sm font-bold">84.2%</p>
+                         <div className="space-y-2 w-full">
+                            <p className="text-[8px] font-black uppercase text-muted-foreground">Dynamic Content Breakdown</p>
+                            <div className="flex flex-wrap gap-2">
+                               {stats?.categoryCounts?.slice(0, 5).map((c: any) => (
+                                  <Badge key={c.category} variant="secondary" className="text-[9px]">{c.category}: {c.count}</Badge>
+                               ))}
                             </div>
                          </div>
                       </CardFooter>
@@ -196,20 +198,6 @@ export default function SystemAdminDashboard() {
                   </div>
                 </div>
 
-                {/* Secondary Analytics */}
-                <Card className="rounded-[2.5rem] border shadow-xl bg-card overflow-hidden">
-                   <CardHeader className="p-8">
-                      <CardTitle className="text-xl font-black tracking-tight flex items-center gap-3">
-                         <TrendingUp className="h-6 w-6 text-emerald-500" />
-                         Department Performance Metrics
-                      </CardTitle>
-                   </CardHeader>
-                   <CardContent className="h-[300px] px-8 pb-8">
-                      <DepartmentVolumeChart />
-                   </CardContent>
-                </Card>
-
-                {/* Alert Matrix */}
                 <section className="grid gap-6 md:grid-cols-2">
                    {securityAlerts.map(alert => (
                      <motion.div 
@@ -247,12 +235,6 @@ export default function SystemAdminDashboard() {
             {activeTab === 'users' && (
               <motion.div key="users" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
                 <UserManagement />
-              </motion.div>
-            )}
-
-            {activeTab === 'roles' && (
-              <motion.div key="roles" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}>
-                <RoleMatrix />
               </motion.div>
             )}
 

@@ -25,91 +25,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { DEPARTMENTS } from '@/lib/constants/departments'
 import { USER_ROLES, ROLE_DISPLAY_NAMES, ACCESS_CONTROL } from '@/lib/constants/roles'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 
-// Admin-level roles to highlight as dept admins
-const ADMIN_ROLES = ['system_admin', 'executive', 'department_head', 'manager', 'supervisor']
-
-function DeptAdminSummary({ users }: { users: User[] }) {
-  const [expanded, setExpanded] = useState(false)
-
-  const departments = Object.values(DEPARTMENTS).filter(d => d !== 'ALL')
-  const deptAdmins: Record<string, User[]> = {}
-  for (const dept of departments) {
-    const admins = users.filter(u =>
-      u.department === dept &&
-      u.status === 'active' &&
-      u.roles.some(r => ADMIN_ROLES.includes(r))
-    )
-    if (admins.length) deptAdmins[dept] = admins
-  }
-
-  const adminCount = Object.values(deptAdmins).flat().length
-
-  return (
-    <Card className="mb-6 border-primary/20">
-      <CardHeader
-        className="py-3 cursor-pointer select-none bg-primary/5"
-        onClick={() => setExpanded(v => !v)}
-      >
-        <CardTitle className="text-sm font-bold flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Crown className="h-4 w-4 text-primary" />
-            Department Administrators
-            <Badge className="bg-primary/10 text-primary text-[10px]">{adminCount} admin{adminCount !== 1 ? 's' : ''}</Badge>
-          </span>
-          {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
-        </CardTitle>
-      </CardHeader>
-      <AnimatePresence initial={false}>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
-          >
-            <CardContent className="p-4">
-              {Object.keys(deptAdmins).length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No department administrators found.</p>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {Object.entries(deptAdmins).map(([dept, admins]) => (
-                    <div key={dept} className="border rounded-lg p-3 bg-muted/10">
-                      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">{dept}</div>
-                      {admins.map(a => (
-                        <div key={a.id} className="flex items-center gap-2 mb-1.5 last:mb-0">
-                          <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                            {(a.fullName || a.username).charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold truncate">{a.fullName || a.username}</div>
-                            <div className="text-[10px] text-muted-foreground truncate">{a.email}</div>
-                          </div>
-                          <div className="flex flex-wrap gap-0.5">
-                            {a.roles.filter(r => ADMIN_ROLES.includes(r)).map(r => (
-                              <Badge key={r} className="text-[9px] py-0 h-4 bg-primary/10 text-primary">
-                                {ROLE_DISPLAY_NAMES[r as keyof typeof ROLE_DISPLAY_NAMES] || r}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </Card>
-  )
-}
+// Admin-level roles to highlight
+const ADMIN_ROLES = ['SUPER_ADMIN']
 
 interface User {
   id: string
@@ -117,8 +38,7 @@ interface User {
   email: string
   fullName: string | null
   employeeId: string | null
-  department: string | null
-  roles: string[]
+  role: string
   status: string
   accessControl: string
   mfaEnabled: boolean
@@ -131,7 +51,6 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('all')
   const [selectedRole, setSelectedRole] = useState<string>('all')
 
   // Form state
@@ -141,25 +60,22 @@ export default function UserManagement() {
     password: '',
     fullName: '',
     employeeId: '',
-    department: '',
-    roles: [] as string[],
+    role: 'EMPLOYEE',
+    accessControl: 'RESTRICTED',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [verificationStates, setVerificationStates] = useState<Record<string, { roles: string[], accessControl: string }>>({})
+  const [verificationStates, setVerificationStates] = useState<Record<string, { role: string, accessControl: string }>>({})
 
-  const updateVerificationRoles = (userId: string, role: string, checked: boolean) => {
+  const updateVerificationRole = (userId: string, role: string) => {
     setVerificationStates(prev => {
-      const userState = prev[userId] || { roles: [], accessControl: ACCESS_CONTROL.RESTRICTED }
-      const updatedRoles = checked
-        ? [...userState.roles, role]
-        : userState.roles.filter(r => r !== role)
-      return { ...prev, [userId]: { ...userState, roles: updatedRoles } }
+      const userState = prev[userId] || { role: 'EMPLOYEE', accessControl: 'RESTRICTED' }
+      return { ...prev, [userId]: { ...userState, role } }
     })
   }
 
   const updateVerificationAccess = (userId: string, level: string) => {
     setVerificationStates(prev => {
-      const userState = prev[userId] || { roles: [], accessControl: ACCESS_CONTROL.RESTRICTED }
+      const userState = prev[userId] || { role: 'EMPLOYEE', accessControl: 'RESTRICTED' }
       return { ...prev, [userId]: { ...userState, accessControl: level } }
     })
   }
@@ -200,7 +116,7 @@ export default function UserManagement() {
         },
         body: JSON.stringify({
           id,
-          roles: state.roles,
+          role: state.role,
           accessControl: state.accessControl,
           action: 'approve'
         }),
@@ -332,10 +248,9 @@ export default function UserManagement() {
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (user.fullName && user.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    const matchesDepartment = selectedDepartment === 'all' || user.department === selectedDepartment
-    const matchesRole = selectedRole === 'all' || user.roles.includes(selectedRole)
+    const matchesRole = selectedRole === 'all' || user.role === selectedRole
 
-    return matchesSearch && matchesDepartment && matchesRole
+    return matchesSearch && matchesRole
   })
 
   // Get status badge
@@ -438,38 +353,17 @@ export default function UserManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-                    <SelectTrigger id="department">
-                      <SelectValue placeholder="Select department" />
+                  <Label htmlFor="role">System Role *</Label>
+                  <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                    <SelectTrigger id="role">
+                      <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.values(DEPARTMENTS).filter(d => d !== 'ALL').map((dept) => (
-                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                      {Object.entries(USER_ROLES).map(([key, value]) => (
+                        <SelectItem key={key} value={value}>{ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="space-y-3">
-                  <Label>Assign Roles (Select all that apply) *</Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-4 border rounded-md bg-muted/20">
-                    {Object.entries(USER_ROLES).map(([key, value]) => (
-                      <div key={key} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`role-${value}`}
-                          checked={formData.roles.includes(value)}
-                          onCheckedChange={() => toggleRole(value)}
-                        />
-                        <label
-                          htmlFor={`role-${value}`}
-                          className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          {ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -528,17 +422,7 @@ export default function UserManagement() {
                 />
               </div>
             </div>
-            <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                {Object.values(DEPARTMENTS).filter(d => d !== 'ALL').map((dept) => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
             <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Role" />
@@ -575,8 +459,7 @@ export default function UserManagement() {
               <thead>
                 <tr className="border-b bg-muted/50">
                   <th className="px-4 py-3 text-left font-semibold">Staff Member</th>
-                  <th className="px-4 py-3 text-left font-semibold">Roles</th>
-                  <th className="px-4 py-3 text-left font-semibold">Department</th>
+                  <th className="px-4 py-3 text-left font-semibold">Role</th>
                   <th className="px-4 py-3 text-left font-semibold">Access</th>
                   <th className="px-4 py-3 text-left font-semibold">Status</th>
                   <th className="px-4 py-3 text-right font-semibold">Actions</th>
@@ -595,16 +478,9 @@ export default function UserManagement() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {user.roles.map(role => (
-                          <Badge key={role} variant="outline" className="text-[10px] py-0 h-5">
-                            {ROLE_DISPLAY_NAMES[role as keyof typeof ROLE_DISPLAY_NAMES] || role}
-                          </Badge>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-muted-foreground">{user.department || '-'}</span>
+                      <Badge variant="outline" className="text-[10px] py-0 h-5">
+                        {ROLE_DISPLAY_NAMES[user.role as keyof typeof ROLE_DISPLAY_NAMES] || user.role}
+                      </Badge>
                     </td>
                     <td className="px-4 py-4">
                       <Badge className="bg-slate-100 text-slate-700 border-slate-200">
@@ -634,33 +510,28 @@ export default function UserManagement() {
                                   <span className="font-medium">{user.fullName}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Department:</span>
-                                  <span className="font-medium">{user.department}</span>
-                                </div>
-                                <div className="flex justify-between">
                                   <span className="text-muted-foreground">Employee ID:</span>
                                   <span className="font-medium">{user.employeeId}</span>
                                 </div>
                               </div>
 
-                              <div className="space-y-4">
-                                <div className="space-y-3">
-                                  <Label className="text-sm">Assign Roles (Multi-select) *</Label>
-                                  <div className="grid grid-cols-1 gap-1.5 max-h-48 overflow-y-auto p-3 border rounded-md bg-white">
-                                    {Object.entries(USER_ROLES).map(([key, value]) => (
-                                      <div key={key} className="flex items-center space-x-2">
-                                        <Checkbox
-                                          id={`verify-role-${user.id}-${value}`}
-                                          checked={(verificationStates[user.id]?.roles || []).includes(value)}
-                                          onCheckedChange={(checked) => updateVerificationRoles(user.id, value, checked === true)}
-                                        />
-                                        <label htmlFor={`verify-role-${user.id}-${value}`} className="text-xs cursor-pointer">
-                                          {ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}
-                                        </label>
-                                      </div>
-                                    ))}
+                                <div className="space-y-4">
+                                  <div className="space-y-3">
+                                    <Label className="text-sm">Assign Role *</Label>
+                                    <Select 
+                                      value={verificationStates[user.id]?.role || 'EMPLOYEE'}
+                                      onValueChange={(value) => updateVerificationRole(user.id, value)}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select role" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {Object.entries(USER_ROLES).map(([key, value]) => (
+                                          <SelectItem key={key} value={value}>{ROLE_DISPLAY_NAMES[value as keyof typeof ROLE_DISPLAY_NAMES]}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
                                   </div>
-                                </div>
 
                                 <div className="space-y-2">
                                   <Label className="text-sm">Access Control Level</Label>

@@ -8,7 +8,6 @@ export interface StaffMember {
     fullName: string;
     password: string; // Plain text for demo purposes
     roles: UserRole[];
-    department: string;
     status: 'active' | 'inactive' | 'suspended' | 'pending';
     employeeId: string;
     accessControl: AccessControl;
@@ -25,8 +24,7 @@ let staffMembers: StaffMember[] = [
         email: 'admin@archive.gov.zw',
         fullName: 'System Administrator',
         password: 'admin123',
-        roles: [UserRole.SYSTEM_ADMIN],
-        department: 'Digital Archives & ICT',
+        roles: [UserRole.SUPER_ADMIN],
         status: 'active',
         employeeId: 'EMP-ADMIN-01',
         accessControl: ACCESS_CONTROL.TOP_SECRET,
@@ -40,8 +38,7 @@ let staffMembers: StaffMember[] = [
         email: 'archivist@archive.gov.zw',
         fullName: 'Chief Archivist',
         password: 'arch123',
-        roles: [UserRole.CHIEF_ARCHIVIST],
-        department: 'Archives Processing & Records Management',
+        roles: [UserRole.EMPLOYEE],
         status: 'active',
         employeeId: 'EMP-ARCH-01',
         accessControl: ACCESS_CONTROL.SECRET,
