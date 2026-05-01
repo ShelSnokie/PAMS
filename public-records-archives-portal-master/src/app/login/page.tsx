@@ -41,15 +41,18 @@ export default function LoginPage() {
       })
 
       const data = await response.json()
+      console.log('Login Response:', data)
 
       if (data.success) {
+        // alert(`Login Successful! Redirecting to ${data.dashboardUrl}`)
+        
         // Set cookie for role-based routing
         document.cookie = `user_role=${data.user.role}; path=/; max-age=3600; SameSite=Lax`
         
         // Store user data for dashboard state
         localStorage.setItem('user', JSON.stringify(data.user))
 
-        window.location.href = data.dashboardUrl || '/'
+        router.push(data.dashboardUrl || '/')
       } else {
         if (data.error === 'Account pending verification') {
           setError('Your account is currently pending administrator verification. Please check back later.')

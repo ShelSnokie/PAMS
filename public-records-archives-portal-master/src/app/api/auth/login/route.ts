@@ -7,6 +7,39 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { username, password } = body;
 
+        // --- TOTAL DEVELOPMENT BYPASS ---
+        if (username === 'admin' && password === 'admin123') {
+            return NextResponse.json({
+                success: true,
+                user: { 
+                    id: 'dev-admin-id', 
+                    username: 'admin', 
+                    role: 'SUPER_ADMIN', 
+                    fullName: 'System Administrator',
+                    email: 'admin@archive.gov.zw',
+                    employeeId: 'EMP-ADMIN-01'
+                },
+                token: 'mock-token',
+                dashboardUrl: '/dashboard/admin'
+            });
+        }
+        if (username === 'employee' && password === 'employee123') {
+            return NextResponse.json({
+                success: true,
+                user: { 
+                    id: 'dev-emp-id', 
+                    username: 'employee', 
+                    role: 'EMPLOYEE', 
+                    fullName: 'Archive Specialist',
+                    email: 'employee@archive.gov.zw',
+                    employeeId: 'EMP-STAFF-01'
+                },
+                token: 'mock-token',
+                dashboardUrl: '/dashboard/employee'
+            });
+        }
+        // ---------------------------------
+
         const user = await prisma.user.findFirst({
             where: {
                 OR: [

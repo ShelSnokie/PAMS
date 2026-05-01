@@ -1,17 +1,13 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-// Using a direct instance to avoid TypeScript language server caching issues
-// with the singleton pattern during active development.
-const db = new PrismaClient()
+import prisma from '@/lib/prisma'
 
 export async function GET() {
   try {
     // @ts-expect-error Prisma client types are regenerated at build time
-    let settings = await db['portalSettings'].findFirst()
+    let settings = await prisma['portalSettings'].findFirst()
     if (!settings) {
       // @ts-expect-error Prisma client types are regenerated at build time
-      settings = await db['portalSettings'].create({
+      settings = await prisma['portalSettings'].create({
         data: {
           digitizationGoal: 35000000,
           digitizationValue: 29750000,
@@ -30,7 +26,7 @@ export async function POST(req: Request) {
     const { digitizationGoal, digitizationValue } = body
 
     // @ts-expect-error Prisma client types are regenerated at build time
-    const settings = await db['portalSettings'].upsert({
+    const settings = await prisma['portalSettings'].upsert({
       where: { id: 'global-settings' },
       update: {
         digitizationGoal: Number(digitizationGoal),
